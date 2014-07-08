@@ -42,5 +42,7 @@ Example Usage
 Issues
 ------
 
-This package and its documentation are currently heavily under development and have not been thoroughly tested.
+1. This package is currently under development and has not been thoroughly tested.
+2. The documentation is under development and minimal.
+3. The package does not build under Windows.
 
