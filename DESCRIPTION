@@ -1,0 +1,20 @@
+Package: fps
+Title: Fantope Projection and Selection
+Version: 0.1
+Authors@R: c(person(c("Vincent", "Q"), "Vu", role = c("aut", "cre"), email =
+    "vqv@stat.osu.edu"))
+Description: ADMM algorithm for FPS
+Depends:
+    R (>= 3.0.0)
+Imports:
+    methods,
+    ggplot2,
+    grid,
+    reshape2,
+    Rcpp (>= 0.11.0),
+    RcppArmadillo (>= 0.4.0),
+    scales
+LinkingTo: Rcpp, RcppArmadillo
+License: GPL (>= 2)
+Suggests:
+    pcaPP

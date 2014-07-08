@@ -1,0 +1,6 @@
+.Rhistory
+.RData
+.Rbuildignore
+src/*.o
+src/*.so
+src/*.dll
