@@ -1,4 +1,4 @@
-#' Plot FPS x
+#' Plot FPS object
 #'
 #' This function plots the regularization path
 #'

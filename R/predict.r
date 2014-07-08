@@ -28,7 +28,7 @@ projection.fps <- function(object, lambda) {
     return(object$projection[[i]])
 }
 
-#' Project onto estimated subspace
+#' Project data onto estimated subspace
 #'
 #' Returns the projection of x onto the estimated subspace
 #'
