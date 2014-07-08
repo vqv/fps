@@ -47,6 +47,13 @@ v <- coef(out, lambda = 0.5)
 print(v)
 ```
 
+or
+
+```R
+library(fps)
+example(fps)
+```
+
 Issues
 ------
 
