@@ -139,7 +139,7 @@ List fps(NumericMatrix S, double ndim,
     _lambda = vec(lambda.begin(), lambda.size(), false);
     nsol = lambda.size();
   } else {
-    if(maxnvar > 0 && maxnvar < _S.n_cols) {
+    if(maxnvar > 0 && (uword) maxnvar < _S.n_cols) {
       lambdamin = maxoffdiag_sorted[maxnvar];
     } else if(lambdamin < 0) {
       // lambdamin automatically set to the minimum maximum off-diagonal

@@ -4,6 +4,6 @@
 #include <RcppArmadillo.h>
 
 void compute_maxoffdiag(arma::vec& maxoffdiag, const arma::mat& x);
-void loglinearseq(arma::vec& out, double min, double max, int n);
+void loglinearseq(arma::vec& out, double min, double max, arma::uword n);
 
 #endif

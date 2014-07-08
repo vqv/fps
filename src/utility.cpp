@@ -22,7 +22,7 @@ void compute_maxoffdiag(vec& maxoffdiag, const mat& x) {
   }
 }
 
-void loglinearseq(vec& out, double min, double max, int n) {
+void loglinearseq(vec& out, double min, double max, uword n) {
   // Generate log linear sequence
   for(uword i = 0; i < n; i++) {
     double lx = (double) (n - i - 1) / (double) (n - 1);
