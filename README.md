@@ -39,6 +39,10 @@ Example Usage
     out <- fps(cor(wine), ndim = 2)
     plot(out)
 
+    # Extract basis coefficients for a particular solution
+    v <- coef(out, lambda = 0.5)
+    print(v)
+
 Issues
 ------
 
