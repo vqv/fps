@@ -44,5 +44,4 @@ Issues
 
 1. This package is currently under development and has not been thoroughly tested.
 2. The documentation is under development and minimal.
-3. The package does not build under Windows.
-
+3. The author has only built the package on Mac OS X 10.9.
