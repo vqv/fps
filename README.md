@@ -28,20 +28,24 @@ Installation
 
 Use the [devtools](https://github.com/hadley/devtools) R package to install directly from GitHub:
 
-    library(devtools)
-    install_github("fps", "vqv")
+```R
+library(devtools)
+install_github("fps", "vqv")
+```
 
 Example Usage
 -------------
 
-    library(fps)
-    data(wine)
-    out <- fps(cor(wine), ndim = 2)
-    plot(out)
+```R
+library(fps)
+data(wine)
+out <- fps(cor(wine), ndim = 2)
+plot(out)
 
-    # Extract basis coefficients for a particular solution
-    v <- coef(out, lambda = 0.5)
-    print(v)
+# Extract basis coefficients for a particular solution
+v <- coef(out, lambda = 0.5) 
+print(v)
+```
 
 Issues
 ------
