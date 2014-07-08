@@ -12,21 +12,10 @@ statistical properties estimator can found in the
 [NIPS conference proceedings](http://papers.nips.cc/paper/5136-fantope-projection-and-selection-a-near-optimal-convex-relaxation-of-sparse-pca). A longer report with more details and new 
 results is forthcoming and will be posted to [arXiv](http://arxiv.org).
 
-Dependencies
-------------
-
-1. methods,
-2. ggplot2,
-3. grid,
-4. reshape2,
-5. Rcpp (>= 0.11.0),
-6. RcppArmadillo (>= 0.4.0),
-7. scales
-
 Installation
 ------------
 
-Use the [devtools](https://github.com/hadley/devtools) R package to install directly from GitHub:
+Use [devtools](https://github.com/hadley/devtools) to install directly from GitHub:
 
 ```R
 library(devtools)
