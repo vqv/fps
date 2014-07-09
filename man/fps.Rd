@@ -17,20 +17,35 @@ fps(S, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
 
 \item{lambda}{Vector of regularization parameter values}
 
-\item{lambdamin}{Minimum value of lambda (automatic if < 0)}
+\item{lambdamin}{Minimum value of lambda (set automatically if
+\code{lambdamin < 0})}
 
 \item{maxnvar}{Suggested maximum number of variables to include
-(ignored if <= 0)}
+(ignored if \code{maxnvar <= 0})}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 
 \item{tolerance}{Convergence threshold}
 
-\item{verbose}{Level of verbosity (0 = silent, >0 = increasing
-                      verbosity)}
+\item{verbose}{Level of verbosity; Silent if \code{verbose = 0}, otherwise
+                      display more messages and progress indicators as \code{verbose}
+                      increases}
 }
 \value{
-Object of class 'fps'
+An S3 object of class \code{fps} which is a list with the
+        following components:
+  \item{ndim}{trace (dimension) of the estimate}
+  \item{lambda}{a vector containing the regularization parameters of each
+                estimate}
+  \item{projection}{a list containing the the projection matrix estimates}
+  \item{leverage}{a matrix whose columns are the diagonal entries of the
+                  projection matrix estimates}
+  \item{L1}{a vector of the sum of absolute values of each estimate}
+  \item{var.explained}{variance explained by each estimate (trace inner
+                       product of the projection and \code{S})}
+  \item{var.total}{total variance (trace of \code{S})}
+  \item{niter}{a vector containing the number of ADMM iterations for each
+               estimate}
 }
 \description{
 This function computes a solution path of the Fantope Projection and
@@ -59,8 +74,8 @@ colnames(noise) <- rep('noise', ncol(noise))
 x <- cbind(wine, noise)
 out <- fps(cor(x), ndim = 2, verbose = 1)
 
-# Choose lambda by cross-validation (this may take a few minutes)
 \dontrun{
+# Choose lambda by cross-validation (this may take a few minutes)
 cvout <- cv(out, x, FUN = cor, verbose = 1)
 plot(cvout)
 v <- coef(out, lambda = cvout$lambda.cv)
