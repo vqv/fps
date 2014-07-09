@@ -124,21 +124,17 @@ List fps(NumericMatrix S, double ndim,
   if(S.nrow() < 2) stop("Expected S to be a matrix");
   if(ndim < 0.0 || ndim > S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");
 
-  // Compute the maximum absolute off-diagonal value for each column of S
-  vec maxoffdiag(_S.n_cols), maxoffdiag_sorted;
-  compute_maxoffdiag(maxoffdiag, _S);
-  maxoffdiag_sorted = sort(maxoffdiag, "descend");
-
-  // Add a constant to the diagonals of S to ensure that
-  // S(i,i) >= |S(i,j)| for all i and j
-  vec diag_adjusted = _S.diag() - min(_S.diag() - maxoffdiag);
-
   // Generate lambda sequence if necessary
   vec _lambda;
   if(lambda.size() > 0) {
     _lambda = vec(lambda.begin(), lambda.size(), false);
     nsol = lambda.size();
   } else {
+    // Compute the maximum absolute off-diagonal value for each column of S
+    vec maxoffdiag(_S.n_cols), maxoffdiag_sorted;
+    compute_maxoffdiag(maxoffdiag, _S);
+    maxoffdiag_sorted = sort(maxoffdiag, "descend");
+
     if(maxnvar > 0 && (uword) maxnvar < _S.n_cols) {
       lambdamin = maxoffdiag_sorted[maxnvar];
     } else if(lambdamin < 0) {
