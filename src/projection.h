@@ -9,7 +9,22 @@
 
 #include <RcppArmadillo.h>
 
-void fantope_projection(arma::mat& x, double d);
-void singularvalue_projection(arma::mat& x, double d);
+struct FantopeProjection {
+
+  FantopeProjection(double d) : d(d) {}
+  void operator()(arma::mat& x) const;
+
+private:
+  double d;
+};
+
+struct SingularValueProjection {
+
+  SingularValueProjection(double d) : d(d) {}
+  void operator()(arma::mat& x) const;
+
+private:
+  double d;
+};
 
 #endif

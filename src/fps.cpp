@@ -11,58 +11,13 @@
 #include <utility>
 #include <cmath>
 
+#include "admm.h"
 #include "projection.h"
 #include "softthreshold.h"
 #include "utility.h"
 
 using namespace Rcpp;
 using namespace arma;
-
-int fps_admm(const mat& S, const double& ndim, const double& lambda,
-             mat& x, mat& z, mat& u, mat& z_old, 
-             double& admm_penalty, const double& admm_adjust,
-             int maxiter, const double& tolerance)
-{
-  int niter;
-  double rr, ss;
-
-  for(niter = 0; niter < maxiter; niter++) {
-    // Store previous value of z
-    z_old = z;
-
-    // Fantope projection
-    x = z - u + (S / admm_penalty);
-    fantope_projection(x, ndim);
-
-    // Elementwise soft thresholding
-    z = x + u;
-    z.transform( SoftThresholdOp(lambda / admm_penalty) );
-
-    // Dual variable update
-    u = u + x - z;
-
-    // Compute primal and dual residual norms
-    rr = norm(x - z, "fro");
-    ss = admm_penalty * norm(z - z_old, "fro");
-
-    // Check convergence criterion
-    if(rr < tolerance && ss < tolerance) {
-      niter++;
-      break;
-    }
-
-    // Penalty adjustment (Boyd, et al. 2010)
-    if(rr > 10.0 * ss) {
-        admm_penalty = admm_penalty * admm_adjust;
-        u = u / admm_adjust;
-    } else if(ss > 10.0 * rr) {
-        admm_penalty = admm_penalty / admm_adjust;
-        u = u * admm_adjust;
-    }
-  }
-
-  return niter;
-}
 
 //' Fantope Projection and Selection
 //'
@@ -169,8 +124,8 @@ List fps(NumericMatrix S, double ndim,
           z_old = zeros<mat>(S.nrow(), S.ncol());
 
   // ADMM parameters
-  double tolerance_abs = sqrt(ndim) * tolerance,
-         admm_penalty = norm(vectorise(_S), "inf"),
+  double tolerance_abs = std::sqrt(ndim) * tolerance,
+         admm_penalty = arma::norm(vectorise(_S), "inf"),
          admm_adjust = 2.0;
 
   // Outer loop to compute solution path
@@ -178,10 +133,11 @@ List fps(NumericMatrix S, double ndim,
     if(verbose > 0) Rcout << ".";
 
     // ADMM
-    niter[i] = fps_admm(_S, ndim, _lambda[i], 
-                        x, z, u, z_old, 
-                        admm_penalty, admm_adjust,
-                        maxiter, tolerance_abs);
+    niter[i] = admm(FantopeProjection(ndim), EntrywiseSoftThreshold(), 
+                    _S, _lambda[i], 
+                    x, z, u, z_old, 
+                    admm_penalty, admm_adjust,
+                    maxiter, tolerance_abs);
 
     // Store solution
     NumericMatrix p(_S.n_rows, _S.n_cols);

@@ -34,4 +34,11 @@ private:
   const double z1, z2;
 };
 
+struct EntrywiseSoftThreshold
+{
+  void operator()(arma::mat& x, double z) const {
+    x.transform( SoftThresholdOp(z) );
+  }
+};
+
 #endif

@@ -9,7 +9,7 @@
 
 using namespace arma;
 
-void fantope_projection(mat& x, double d) {
+void FantopeProjection::operator()(mat& x) const {
 
   int rank;
   vec eigval;
@@ -28,7 +28,7 @@ void fantope_projection(mat& x, double d) {
   return;
 }
 
-void singularvalue_projection(mat& x, double d) {  
+void SingularValueProjection::operator()(mat& x) const {  
 
   int rank;
   vec s;
