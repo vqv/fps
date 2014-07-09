@@ -36,7 +36,7 @@ private:
 
 struct EntrywiseSoftThreshold
 {
-  void operator()(arma::mat& x, double z) const {
+  void operator()(arma::mat& x, const double& z) const {
     x.transform( SoftThresholdOp(z) );
   }
 };
