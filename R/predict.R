@@ -14,7 +14,7 @@
 #' @export
 coef.fps <- function(object, lambda, ...) {
     i <- which.min(abs(object$lambda - lambda))
-    v <- svd(object$projection[[i]], nu = 0, nv = object$ndim)$v
+    v <- svd(object$projection[[i]], nu = 0, nv = ceiling(object$ndim))$v
     rownames(v) <- rownames(object$projection[[i]])
     class(v) <- 'fps_coef'
     return(v)
@@ -28,8 +28,9 @@ projection <- function(object, ...) UseMethod("projection")
 #'
 #' @param object  fps object
 #' @param lambda  lambda value to extract
+#' @param ...   further arguments passed to or from other methods.
 #' @export
-projection.fps <- function(object, lambda) {
+projection.fps <- function(object, lambda, ...) {
     i <- which.min(abs(object$lambda - lambda))
     return(object$projection[[i]])
 }

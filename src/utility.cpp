@@ -12,6 +12,7 @@
 using namespace arma;
 
 void compute_maxoffdiag(vec& maxoffdiag, const mat& x) {
+  maxoffdiag.set_size(x.n_cols);
   for(uword j = 0; j < x.n_cols; j++) {
     maxoffdiag(j) = 0;
     for(uword i = 0; i < x.n_rows; i++) {
@@ -22,8 +23,9 @@ void compute_maxoffdiag(vec& maxoffdiag, const mat& x) {
   }
 }
 
+// Generate log linear sequence
 void loglinearseq(vec& out, double min, double max, uword n) {
-  // Generate log linear sequence
+  out.set_size(n);
   for(uword i = 0; i < n; i++) {
     double lx = (double) (n - i - 1) / (double) (n - 1);
     out(i) = (1.0 - lx) * min + lx * max;

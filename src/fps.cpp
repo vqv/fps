@@ -113,7 +113,6 @@ List fps(NumericMatrix S, double ndim,
     }
     double lambdamax = std::max(lambdamin, maxoffdiag_sorted[0]);
 
-    _lambda = vec(nsol);
     loglinearseq(_lambda, lambdamin, lambdamax, nsol);
   }
 
@@ -174,7 +173,8 @@ List fps(NumericMatrix S, double ndim,
   // Return
   List out = List::create(
     Named("ndim") = ndim,
-    Named("lambda") = _lambda,
+    Named("lambda") = wrap(_lambda.memptr(), 
+                           _lambda.memptr() + _lambda.n_elem),
     Named("projection") = projection,
     Named("leverage") = leverage,
     Named("L1") = L1,
