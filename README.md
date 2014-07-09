@@ -1,16 +1,8 @@
 Fantope Projection & Selection
 ==============================
 
-`fps` is an R package that provides an implementation of an ADMM algorithm for computing the 
-Fantope projection and selection estimator.  Most of the package is written in 
-C++ using Rcpp and the Armadillo C++ library. The estimator is based on 
-a convex relaxation of the sparse PCA problem based on the convex hull 
-projection matrices (the Fantope).  This circumvents orthogonality and 
-deflation issues that plague previous approaches to sparse PCA.  A 
-preliminary report describing this estimator and some of its near-optimal 
-statistical properties estimator can found in the 
-[NIPS conference proceedings](http://papers.nips.cc/paper/5136-fantope-projection-and-selection-a-near-optimal-convex-relaxation-of-sparse-pca). A longer report with more details and new 
-results is forthcoming and will be posted to [arXiv](http://arxiv.org).
+This is a private branch of the fps R package.  The plan is to develop 
+new functionality for regularized singular value decompositions here.
 
 Installation
 ------------
@@ -29,20 +21,33 @@ Example Usage
 
 ```R
 library(fps)
-data(wine)
-out <- fps(cor(wine), ndim = 2)
-plot(out)
 
-# Extract basis coefficients for a particular solution
-v <- coef(out, lambda = 0.5) 
-print(v)
-```
+n <- 100
+m <- 100
 
-or
+u <- matrix(0, nrow = n, ncol = 2)
+u[1:5, 1] <- 1
+u[11:15, 2] <- 1
+u <- qr.Q(qr(u))
 
-```R
-library(fps)
-example(fps)
+v <- matrix(0, nrow = m, ncol = 2)
+v[1:5, 1] <- 1
+v[11:15, 2] <- 1
+v <- qr.Q(qr(v))
+
+mu <- tcrossprod(u,v)
+image(mu)
+
+set.seed(1)
+x <- 16 * mu + matrix(rnorm(n*m), nrow = n)
+image(x)
+
+s <- svd(x)
+image(tcrossprod(s$u[,1:2], s$v[,1:2]), main = 'SVD')
+
+out <- svps(x, ndim = 2, verbose = 1)
+print(out)
+image(projection(out, 1), main = 'SVPS')
 ```
 
 Issues

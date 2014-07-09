@@ -69,3 +69,56 @@ fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, 
     .Call('fps_fps', PACKAGE = 'fps', S, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose)
 }
 
+#' Singular Value Projection and Selection
+#'
+#' This function computes a solution path of the Singular Value Projection 
+#' and Selection (SVPS) estimator.  It takes a data matrix \code{x} as input 
+#' and returns an object containing a list of projection matrices 
+#' estimated by SVPS over a sequence of regularization parameter values.
+#'
+#' By default, a sensible minimum value of the regularization parameter 
+#' is automatically chosen so that the minimally regularized solution
+#' is different from the ordinary SVD.
+#'
+#' @param x              Input matrix
+#' @param ndim           Target subspace dimension (can be fractional)
+#' @param nsol           Number of solutions to compute
+#' @param lambda         Vector of regularization parameter values
+#' @param lambdamin      Minimum value of lambda (set automatically if 
+#'                       \code{lambdamin < 0})
+#' @param maxnvar        Suggested maximum number of variables to include 
+#'                       (ignored if \code{maxnvar <= 0})
+#' @param maxiter        Maximum number of iterations for each solution
+#' @param tolerance      Convergence threshold
+#' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
+#'                       display more messages and progress indicators as \code{verbose} 
+#'                       increases
+#'
+#' @return An S3 object of class \code{svps} which is a list with the 
+#'         following components:
+#'   \item{ndim}{sum of squares (dimension) of the estimate}
+#'   \item{lambda}{a vector containing the regularization parameters of each 
+#'                 estimate}
+#'   \item{projection}{a list containing the the (bi-)projection matrix 
+#'                     estimates}
+#'   \item{leverage.row}{a matrix whose columns are the row leverages}
+#'   \item{leverage.col}{a matrix whose columns are the column leverages}
+#'   \item{L1}{a vector of the sum of absolute values of each estimate}
+#'   \item{var.explained}{}
+#'   \item{var.total}{}
+#'   \item{niter}{a vector containing the number of ADMM iterations for each 
+#'                estimate}
+#'
+#' @export
+#'
+#' @examples
+#' # Apply FPS to the standardized wine data from the UCI ML repository
+#' data(wine)
+#' out <- fps(cor(wine), ndim = 2)
+#' print(out)
+#' plot(out)
+#'
+svps <- function(x, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, maxnvar = -1L, maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_svps', PACKAGE = 'fps', x, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose)
+}
+
