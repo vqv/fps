@@ -1,3 +1,9 @@
+# 
+# predict.R
+# 
+# Copyright 2014 Vincent Q. Vu. All rights reserved
+# 
+
 #' Extract basis vector estimates
 #'
 #' Returns estimated basis vectors

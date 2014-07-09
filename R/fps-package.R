@@ -1,3 +1,9 @@
+# 
+# fps-package.R
+# 
+# Copyright 2014 Vincent Q. Vu. All rights reserved
+# 
+
 #' Fantope Project and Select
 #'
 #' @useDynLib fps

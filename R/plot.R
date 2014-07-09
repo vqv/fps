@@ -1,3 +1,9 @@
+# 
+# plot.R
+# 
+# Copyright 2014 Vincent Q. Vu. All rights reserved
+# 
+
 #' Plot FPS object
 #'
 #' This function plots the regularization path

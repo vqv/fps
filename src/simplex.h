@@ -1,3 +1,9 @@
+//
+// simplex.h
+// 
+// Copyright 2014 Vincent Q. Vu. All rights reserved
+//
+
 #ifndef __SIMPLEX_H
 #define __SIMPLEX_H
 

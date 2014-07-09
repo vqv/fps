@@ -1,3 +1,9 @@
+//
+// utility.h
+// 
+// Copyright 2014 Vincent Q. Vu. All rights reserved
+//
+
 #ifndef __UTILITY_H
 #define __UTILITY_H
 

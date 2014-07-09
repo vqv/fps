@@ -1,3 +1,9 @@
+# 
+# asprcomp.R
+# 
+# Copyright 2014 Vincent Q. Vu. All rights reserved
+# 
+
 #' Convert to prcomp object
 #'
 #' Converts an fps object to a prcomp object

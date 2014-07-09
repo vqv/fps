@@ -1,3 +1,9 @@
+# 
+# print.R
+# 
+# Copyright 2014 Vincent Q. Vu. All rights reserved
+# 
+
 #' Print FPS object
 #'
 #' This function prints

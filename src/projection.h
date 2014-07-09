@@ -1,3 +1,9 @@
+//
+// projection.h
+// 
+// Copyright 2014 Vincent Q. Vu. All rights reserved
+//
+
 #ifndef __PROJECTION_H
 #define __PROJECTION_H
 

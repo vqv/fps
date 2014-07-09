@@ -1,3 +1,9 @@
+//
+// softthreshold.h
+// 
+// Copyright 2014 Vincent Q. Vu. All rights reserved
+//
+
 #ifndef __SOFTTHRESHOLD_H
 #define __SOFTTHRESHOLD_H
 

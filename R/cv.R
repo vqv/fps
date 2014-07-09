@@ -1,3 +1,9 @@
+# 
+# cv.R
+# 
+# Copyright 2014 Vincent Q. Vu. All rights reserved
+# 
+
 cv <- function(object, ...) UseMethod("cv")
 
 #' Estimate projection score by cross-validation
