@@ -3,12 +3,14 @@
 \alias{projection.fps}
 \title{Extract projection estimates}
 \usage{
-\method{projection}{fps}(object, lambda)
+\method{projection}{fps}(object, lambda, ...)
 }
 \arguments{
 \item{object}{fps object}
 
 \item{lambda}{lambda value to extract}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 Returns estimated projection matrix
