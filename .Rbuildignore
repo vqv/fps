@@ -1,0 +1,4 @@
+"^.*\\.sublime-"
+^.*\.Rproj$
+^\.Rproj\.user$
+^dev$

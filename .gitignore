@@ -1,7 +1,8 @@
+.DS_Store
 .Rhistory
 .RData
-.Rbuildignore
 src/*.o
 src/*.so
 src/*.dll
 .Rproj.user
+*.sublime*
