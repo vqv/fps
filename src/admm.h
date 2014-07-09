@@ -15,7 +15,7 @@
  * @details 
  * Implements an ADMM algorithm for solving the optimization problem:
  * \f[
- *   \max_{x \in C} \langle input, x \rangle + \lambda R(x)
+ *   \max_{x \in C} \langle input, x \rangle - \lambda R(x)
  * \f]
  * This can be interpreted as a regularized support function where the 
  * regularizer is the function R(x). The working memory for this algorithm 
