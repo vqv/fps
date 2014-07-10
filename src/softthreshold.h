@@ -44,4 +44,19 @@ private:
   const double lambda;
 };
 
+struct ColumnSoftThreshold
+{
+  ColumnSoftThreshold(const double& lambda) : lambda(lambda) {}
+  void operator()(arma::mat& x, const double& z) const {
+    double c = z * lambda;
+    for(arma::uword j = 0; j < x.n_cols; j++) {
+      double y = norm(x.col(j));
+      x.col(j) = x.col(j) * std::max(0.0, 1.0 - c / y);
+    }
+  }
+
+private:
+  const double lambda;
+};
+
 #endif
