@@ -90,9 +90,9 @@ fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, 
 #'                       (ignored if \code{maxnvar <= 0})
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold
-#' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
-#'                       display more messages and progress indicators as \code{verbose} 
-#'                       increases
+#' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, 
+#'                       otherwise display more messages and progress 
+#'                       indicators as \code{verbose} increases
 #'
 #' @return An S3 object of class \code{svps} which is a list with the 
 #'         following components:
@@ -114,9 +114,8 @@ fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, 
 #' @examples
 #' # Apply FPS to the standardized wine data from the UCI ML repository
 #' data(wine)
-#' out <- fps(cor(wine), ndim = 2)
+#' out <- svps(scale(wine), ndim = 3)
 #' print(out)
-#' plot(out)
 #'
 svps <- function(x, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, maxnvar = -1L, maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
     .Call('fps_svps', PACKAGE = 'fps', x, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose)

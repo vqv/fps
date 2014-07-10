@@ -40,9 +40,9 @@ using namespace arma;
 //'                       (ignored if \code{maxnvar <= 0})
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
-//' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
-//'                       display more messages and progress indicators as \code{verbose} 
-//'                       increases
+//' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, 
+//'                       otherwise display more messages and progress 
+//'                       indicators as \code{verbose} increases
 //'
 //' @return An S3 object of class \code{svps} which is a list with the 
 //'         following components:
@@ -64,9 +64,8 @@ using namespace arma;
 //' @examples
 //' # Apply FPS to the standardized wine data from the UCI ML repository
 //' data(wine)
-//' out <- fps(cor(wine), ndim = 2)
+//' out <- svps(scale(wine), ndim = 3)
 //' print(out)
-//' plot(out)
 //'
 // [[Rcpp::export]]
 List svps(NumericMatrix x, double ndim,

@@ -25,9 +25,9 @@ svps(x, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
 
 \item{tolerance}{Convergence threshold}
 
-\item{verbose}{Level of verbosity; Silent if \code{verbose = 0}, otherwise
-                      display more messages and progress indicators as \code{verbose}
-                      increases}
+\item{verbose}{Level of verbosity; Silent if \code{verbose = 0},
+                      otherwise display more messages and progress
+                      indicators as \code{verbose} increases}
 }
 \value{
 An S3 object of class \code{svps} which is a list with the
@@ -59,8 +59,7 @@ is different from the ordinary SVD.
 \examples{
 # Apply FPS to the standardized wine data from the UCI ML repository
 data(wine)
-out <- fps(cor(wine), ndim = 2)
+out <- svps(scale(wine), ndim = 3)
 print(out)
-plot(out)
 }
 
