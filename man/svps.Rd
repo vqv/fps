@@ -61,5 +61,6 @@ is different from the ordinary SVD.
 data(wine)
 out <- svps(scale(wine), ndim = 3)
 print(out)
+plot(out)
 }
 

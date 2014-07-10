@@ -43,3 +43,32 @@ plot.fps <- function(x, type = c('leverage', 'variance', 'coherence', 'crossleve
     }
     return(p)
 }
+
+#' Plot leverages
+#'
+#' This function plots the regularization path
+#'
+#' @param x          svps object
+#' @param type       plot rows (default) or columns?
+#' @param ...        further arguments passed to or from other methods.
+#' @export
+#' @examples
+#' data(wine)
+#' out <- svps(scale(wine), ndim = 2)
+#' plot(out)
+plot.svps <- function(x, type = c('row', 'column'), ...) {
+  type <- match.arg(type)
+
+  if(type == 'row') {
+    df <- melt(data.frame(lambda = x$lambda, t(x$leverage.row)), 
+               id.vars = "lambda")
+  } else {
+    df <- melt(data.frame(lambda = x$lambda, t(x$leverage.col)), 
+               id.vars = "lambda")    
+  }
+
+  p <- qplot(x = lambda, y = value, geom = 'line', color = variable, data = df)
+  p <- p + xlab(expression(lambda)) + ylab("leverage")
+
+  return(p)
+}

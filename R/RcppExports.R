@@ -116,6 +116,7 @@ fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, 
 #' data(wine)
 #' out <- svps(scale(wine), ndim = 3)
 #' print(out)
+#' plot(out)
 #'
 svps <- function(x, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, maxnvar = -1L, maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
     .Call('fps_svps', PACKAGE = 'fps', x, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose)
