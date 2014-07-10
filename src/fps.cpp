@@ -92,7 +92,7 @@ List fps(NumericMatrix S, double ndim,
   const mat _S(S.begin(), S.nrow(), S.ncol(), false);
 
   if(S.nrow() < 2) stop("Expected S to be a matrix");
-  if(ndim < 0.0 || ndim > S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");
+  if(ndim <= 0.0 || ndim >= S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");
 
   // Generate lambda sequence if necessary
   vec _lambda;
