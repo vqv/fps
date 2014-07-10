@@ -142,9 +142,9 @@ List svps(NumericMatrix x, double ndim,
     if(verbose > 0) Rcout << ".";
 
     // ADMM
-    niter[i] = admm(SingularValueProjection(ndim), EntrywiseSoftThreshold(), 
-                    _x, _lambda[i], 
-                    h, z, u, z_old, 
+    niter[i] = admm(SingularValueProjection(ndim), 
+                    EntrywiseSoftThreshold(_lambda[i]), 
+                    _x, h, z, u, z_old, 
                     admm_penalty, admm_adjust,
                     maxiter, tolerance_abs);
 
