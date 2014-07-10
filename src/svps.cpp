@@ -54,7 +54,8 @@ using namespace arma;
 //'   \item{leverage.row}{a matrix whose columns are the row leverages}
 //'   \item{leverage.col}{a matrix whose columns are the column leverages}
 //'   \item{L1}{a vector of the sum of absolute values of each estimate}
-//'   \item{var.explained}{}
+//'   \item{var.row}{}
+//'   \item{var.col}{}
 //'   \item{var.total}{}
 //'   \item{niter}{a vector containing the number of ADMM iterations for each 
 //'                estimate}
@@ -111,7 +112,8 @@ List svps(NumericMatrix x, double ndim,
   List            projection(nsol);
   NumericVector   niter(nsol);
   NumericVector   L1(nsol);
-  NumericVector   varexplained(nsol);
+  NumericVector   var_row(nsol);
+  NumericVector   var_col(nsol);
   NumericMatrix   leverage_row(_x.n_rows, nsol);
   NumericMatrix   leverage_col(_x.n_cols, nsol);
   mat _leverage_row(leverage_row.begin(), _x.n_rows, nsol, false),
@@ -156,11 +158,8 @@ List svps(NumericMatrix x, double ndim,
     projection(i) = p;
 
     L1(i) = norm(vectorise(z), 1);
-    if(_x.n_rows < _x.n_cols) {
-      varexplained(i) = accu(square(_x * z.t()));
-    } else {
-      varexplained(i) = accu(square(_x.t() * z));
-    }
+    var_row(i) = accu(square(_x.t() * z)); // trace(xx' zz')
+    var_col(i) = accu(square(_x * z.t())); // trace(x'x z'z)
     _leverage_row.col(i) = vectorise(sum(square(z), 1));
     _leverage_col.col(i) = vectorise(sum(square(z), 0));
 
@@ -179,7 +178,8 @@ List svps(NumericMatrix x, double ndim,
     Named("leverage.row") = leverage_row,
     Named("leverage.col") = leverage_col,
     Named("L1") = L1,
-    Named("var.explained") = varexplained,
+    Named("var.row") = var_row,
+    Named("var.col") = var_col,
     Named("var.total") = accu(square(_x)),
     Named("niter") = niter
   );

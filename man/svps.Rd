@@ -40,7 +40,8 @@ An S3 object of class \code{svps} which is a list with the
   \item{leverage.row}{a matrix whose columns are the row leverages}
   \item{leverage.col}{a matrix whose columns are the column leverages}
   \item{L1}{a vector of the sum of absolute values of each estimate}
-  \item{var.explained}{}
+  \item{var.row}{}
+  \item{var.col}{}
   \item{var.total}{}
   \item{niter}{a vector containing the number of ADMM iterations for each
                estimate}
