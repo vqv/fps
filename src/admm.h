@@ -15,7 +15,7 @@
  * @details 
  * Implements an ADMM algorithm for solving the optimization problem:
  * \f[
- *   \max_{x \in C} \langle input, x \rangle - \lambda R(x)
+ *   \max_{x \in C} \langle input, x \rangle - R(x)
  * \f]
  * This can be interpreted as a regularized support function where the 
  * regularizer is the function R(x). The working memory for this algorithm 
@@ -27,7 +27,6 @@
  * @param selection     A functor operator()(arma::mat&, const double&) that 
  *                      implements the proximal operator of scaled regularizer 
  * @param input         Input matrix
- * @param lambda        Regularization parameter
  * @param x             Reference to an arma::mat of the same dimension as input
  * @param z             Reference to an arma::mat of the same dimension as input
  * @param u             Reference to an arma::mat of the same dimension as input
@@ -41,7 +40,7 @@
  */
 template <typename F, typename G> 
 int admm(F projection, G selection, 
-         const arma::mat& input, const double& lambda,
+         const arma::mat& input, 
          arma::mat& x, arma::mat& z, arma::mat& u, arma::mat& z_old, 
          double& admm_penalty, const double& admm_adjust,
          int maxiter, const double& tolerance)
@@ -59,7 +58,7 @@ int admm(F projection, G selection,
 
     // Selection
     z = x + u;
-    selection(z, lambda / admm_penalty);
+    selection(z, 1.0 / admm_penalty);
 
     // Dual variable update
     u = u + x - z;
