@@ -149,8 +149,7 @@ List fps(NumericMatrix S, double ndim,
     // ADMM
     niter[i] = admm(FantopeProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    _S, _lambda[i], 
-                    x, z, u, z_old, 
+                    _S, x, z, u, z_old, 
                     admm_penalty, admm_adjust,
                     maxiter, tolerance_abs);
 
