@@ -86,13 +86,23 @@ fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, 
 #' @param lambda         Vector of regularization parameter values
 #' @param lambdamin      Minimum value of lambda (set automatically if 
 #'                       \code{lambdamin < 0})
-#' @param maxnvar        Suggested maximum number of variables to include 
-#'                       (ignored if \code{maxnvar <= 0})
+#' @param lambdaminratio Minimum value of lambda as a fraction of 
+#'                       the automatically determined maximum value of 
+#'                       lambda (ignored if \code{lambdaminratio < 0})
+#' @param maxnrow        Suggested maximum number of rows to include 
+#'                       (ignored if \code{maxnrow <= 0})
+#' @param maxncol        Suggested maximum number of cols to include 
+#'                       (ignored if \code{maxnrow <= 0})
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold
-#' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, 
+#' @param verbose        Level of verbosity (silent if \code{verbose = 0}; 
 #'                       otherwise display more messages and progress 
-#'                       indicators as \code{verbose} increases
+#'                       indicators as \code{verbose} increases)
+#'
+#' @details
+#'
+#' The default automatic choice of lambdamin ensures that the least 
+#' regularized estimate omits at least one row or column.
 #'
 #' @return An S3 object of class \code{svps} which is a list with the 
 #'         following components:
@@ -119,7 +129,7 @@ fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, 
 #' print(out)
 #' plot(out)
 #'
-svps <- function(x, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, maxnvar = -1L, maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_svps', PACKAGE = 'fps', x, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose)
+svps <- function(x, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, lambdaminratio = -1, maxnrow = -1L, maxncol = -1L, maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_svps', PACKAGE = 'fps', x, ndim, lambda, nsol, lambdamin, lambdaminratio, maxnrow, maxncol, maxiter, tolerance, verbose)
 }
 

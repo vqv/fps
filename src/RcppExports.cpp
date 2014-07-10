@@ -30,8 +30,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // svps
-List svps(NumericMatrix x, double ndim, NumericVector lambda = NumericVector::create(), int nsol = 50, double lambdamin = -1, int maxnvar = -1, int maxiter = 100, double tolerance = 1e-3, int verbose = 0);
-RcppExport SEXP fps_svps(SEXP xSEXP, SEXP ndimSEXP, SEXP lambdaSEXP, SEXP nsolSEXP, SEXP lambdaminSEXP, SEXP maxnvarSEXP, SEXP maxiterSEXP, SEXP toleranceSEXP, SEXP verboseSEXP) {
+List svps(NumericMatrix x, double ndim, NumericVector lambda = NumericVector::create(), int nsol = 50, double lambdamin = -1, double lambdaminratio = -1, int maxnrow = -1, int maxncol = -1, int maxiter = 100, double tolerance = 1e-3, int verbose = 0);
+RcppExport SEXP fps_svps(SEXP xSEXP, SEXP ndimSEXP, SEXP lambdaSEXP, SEXP nsolSEXP, SEXP lambdaminSEXP, SEXP lambdaminratioSEXP, SEXP maxnrowSEXP, SEXP maxncolSEXP, SEXP maxiterSEXP, SEXP toleranceSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -41,11 +41,13 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< NumericVector >::type lambda(lambdaSEXP );
         Rcpp::traits::input_parameter< int >::type nsol(nsolSEXP );
         Rcpp::traits::input_parameter< double >::type lambdamin(lambdaminSEXP );
-        Rcpp::traits::input_parameter< int >::type maxnvar(maxnvarSEXP );
+        Rcpp::traits::input_parameter< double >::type lambdaminratio(lambdaminratioSEXP );
+        Rcpp::traits::input_parameter< int >::type maxnrow(maxnrowSEXP );
+        Rcpp::traits::input_parameter< int >::type maxncol(maxncolSEXP );
         Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP );
         Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP );
         Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP );
-        List __result = svps(x, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose);
+        List __result = svps(x, ndim, lambda, nsol, lambdamin, lambdaminratio, maxnrow, maxncol, maxiter, tolerance, verbose);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

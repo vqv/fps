@@ -36,13 +36,23 @@ using namespace arma;
 //' @param lambda         Vector of regularization parameter values
 //' @param lambdamin      Minimum value of lambda (set automatically if 
 //'                       \code{lambdamin < 0})
-//' @param maxnvar        Suggested maximum number of variables to include 
-//'                       (ignored if \code{maxnvar <= 0})
+//' @param lambdaminratio Minimum value of lambda as a fraction of 
+//'                       the automatically determined maximum value of 
+//'                       lambda (ignored if \code{lambdaminratio < 0})
+//' @param maxnrow        Suggested maximum number of rows to include 
+//'                       (ignored if \code{maxnrow <= 0})
+//' @param maxncol        Suggested maximum number of cols to include 
+//'                       (ignored if \code{maxnrow <= 0})
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
-//' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, 
+//' @param verbose        Level of verbosity (silent if \code{verbose = 0}; 
 //'                       otherwise display more messages and progress 
-//'                       indicators as \code{verbose} increases
+//'                       indicators as \code{verbose} increases)
+//'
+//' @details
+//'
+//' The default automatic choice of lambdamin ensures that the least 
+//' regularized estimate omits at least one row or column.
 //'
 //' @return An S3 object of class \code{svps} which is a list with the 
 //'         following components:
@@ -72,7 +82,8 @@ using namespace arma;
 // [[Rcpp::export]]
 List svps(NumericMatrix x, double ndim,
           NumericVector lambda = NumericVector::create(), 
-          int nsol = 50, double lambdamin = -1, int maxnvar = -1, 
+          int nsol = 50, double lambdamin = -1, double lambdaminratio = -1, 
+          int maxnrow = -1, int maxncol = -1, 
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
   if(x.ncol() < 2 || x.nrow() < 2) {
@@ -85,25 +96,40 @@ List svps(NumericMatrix x, double ndim,
   // Map x to an arma::mat
   const mat _x(x.begin(), x.nrow(), x.ncol(), false);
 
+  // Compute row- and column-wise infinity norms.
+  vec max_row = vectorise(max(abs(_x), 1)), 
+      max_col = vectorise(max(abs(_x), 0));
+
   // Generate lambda sequence if necessary
   vec _lambda;
   if(lambda.size() > 0) {
     _lambda = vec(lambda.begin(), lambda.size(), false);
     nsol = lambda.size();
   } else {
-    vec max_row = sort(vectorise(max(abs(_x), 1)), "descend"),
-        max_col = sort(vectorise(max(abs(_x), 0)), "descend");
+    // Compute lambdamin and lambdamax automatically
+    double lambdamax = std::max(max_row.max(), max_col.max());
 
-    if(maxnvar > 0 && (uword) maxnvar < _x.n_rows 
-                   && (uword) maxnvar < _x.n_cols) {
-      lambdamin = std::max(max_row[maxnvar], 
-                           max_col[maxnvar]);
-    } else if(lambdamin < 0) {
-      lambdamin = std::min(max_row[_x.n_rows - 1], 
-                           max_col[_x.n_cols - 1]) * 0.1;
+    // Since several arguments may specify lambdamin indirectly, 
+    // the strategy is to choose the largest one.
+    if(lambdamin < 0) {
+      // Set lambdamin as a ratio of lambdamax?
+      if(lambdaminratio < 0) {
+        lambdamin = std::min(max_row.min(), max_col.min());
+      } else {
+        lambdamin = lambdamax * lambdaminratio;
+      }
+
+      // Override lambdamin if maxnrow or maxncol specified
+      if(maxnrow > 0 && (uword) maxnrow < _x.n_rows) {
+        vec max_row_sorted = sort(max_row, "descend");
+        lambdamin = std::max(lambdamin, max_row[maxnrow]);
+      }
+
+      if(maxncol > 0 && (uword) maxncol < _x.n_cols) {
+        vec max_col_sorted = sort(max_col, "descend");
+        lambdamin = std::max(lambdamin, max_col[maxncol]);
+      }
     }
-    double lambdamax = std::min(max_row[std::ceil(ndim)], 
-                                max_col[std::ceil(ndim)]);
 
     loglinearseq(_lambda, lambdamin, lambdamax, nsol);
   }

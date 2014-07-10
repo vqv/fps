@@ -4,7 +4,8 @@
 \title{Singular Value Projection and Selection}
 \usage{
 svps(x, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
-  maxnvar = -1L, maxiter = 100L, tolerance = 0.001, verbose = 0L)
+  lambdaminratio = -1, maxnrow = -1L, maxncol = -1L, maxiter = 100L,
+  tolerance = 0.001, verbose = 0L)
 }
 \arguments{
 \item{x}{Input matrix}
@@ -18,16 +19,23 @@ svps(x, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
 \item{lambdamin}{Minimum value of lambda (set automatically if
 \code{lambdamin < 0})}
 
-\item{maxnvar}{Suggested maximum number of variables to include
-(ignored if \code{maxnvar <= 0})}
+\item{lambdaminratio}{Minimum value of lambda as a fraction of
+the automatically determined maximum value of
+lambda (ignored if \code{lambdaminratio < 0})}
+
+\item{maxnrow}{Suggested maximum number of rows to include
+(ignored if \code{maxnrow <= 0})}
+
+\item{maxncol}{Suggested maximum number of cols to include
+(ignored if \code{maxnrow <= 0})}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 
 \item{tolerance}{Convergence threshold}
 
-\item{verbose}{Level of verbosity; Silent if \code{verbose = 0},
+\item{verbose}{Level of verbosity (silent if \code{verbose = 0};
                       otherwise display more messages and progress
-                      indicators as \code{verbose} increases}
+                      indicators as \code{verbose} increases)}
 }
 \value{
 An S3 object of class \code{svps} which is a list with the
@@ -56,6 +64,9 @@ estimated by SVPS over a sequence of regularization parameter values.
 By default, a sensible minimum value of the regularization parameter
 is automatically chosen so that the minimally regularized solution
 is different from the ordinary SVD.
+
+The default automatic choice of lambdamin ensures that the least
+regularized estimate omits at least one row or column.
 }
 \examples{
 # Apply FPS to the standardized wine data from the UCI ML repository

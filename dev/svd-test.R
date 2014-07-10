@@ -21,6 +21,10 @@ image(x)
 s <- svd(x)
 image(tcrossprod(s$u[,1:2], s$v[,1:2]), main = 'SVD')
 
-out <- svps(x, ndim = 2, verbose = 1)
+out <- svps(x, ndim = 2, lambdaminratio = 0.1, verbose = 1)
 print(out)
 image(projection(out, 1), main = 'SVPS')
+
+library(microbenchmark)
+microbenchmark(out <- svps(x, ndim = 2, verbose = 1), times = 10)
+print(out)
