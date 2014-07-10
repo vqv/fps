@@ -77,7 +77,7 @@ List svps(NumericMatrix x, double ndim,
   if(x.ncol() < 2 || x.nrow() < 2) {
     stop("Expected x to be a matrix");
   }
-  if(ndim < 0.0 || ndim >= std::min(x.nrow(), x.ncol())) {
+  if(ndim <= 0.0 || ndim >= std::min(x.nrow(), x.ncol())) {
     stop("Expected ndim to be between 0 and the number of rows/columns of S");
   }
 
