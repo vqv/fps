@@ -132,10 +132,8 @@ List fps(NumericMatrix S, double ndim,
   }
 
   // ADMM variables
-  mat     x = zeros<mat>(S.nrow(), S.ncol()), 
-          z = zeros<mat>(S.nrow(), S.ncol()),
-          u = zeros<mat>(S.nrow(), S.ncol()),
-          z_old = zeros<mat>(S.nrow(), S.ncol());
+  mat z = zeros<mat>(S.nrow(), S.ncol()),
+      u = zeros<mat>(S.nrow(), S.ncol());
 
   // ADMM parameters
   double tolerance_abs = std::sqrt(ndim) * tolerance,
@@ -149,7 +147,7 @@ List fps(NumericMatrix S, double ndim,
     // ADMM
     niter[i] = admm(FantopeProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    _S, x, z, u, z_old, 
+                    _S, z, u, 
                     admm_penalty, admm_adjust,
                     maxiter, tolerance_abs);
 

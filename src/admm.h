@@ -27,10 +27,10 @@
  * @param selection     A functor operator()(arma::mat&, const double&) that 
  *                      implements the proximal operator of scaled regularizer 
  * @param input         Input matrix
- * @param x             Reference to an arma::mat of the same dimension as input
- * @param z             Reference to an arma::mat of the same dimension as input
- * @param u             Reference to an arma::mat of the same dimension as input
- * @param z_old         Reference to an arma::mat of the same dimension as input
+ * @param z             Solution matrix. Reference to an arma::mat of the same  
+ *                      dimension as input
+ * @param u             Dual variable matrix. Reference to an arma::mat of the same 
+ *                      dimension as input
  * @param admm_penalty  Reference to the ADMM penalty parameter; it may change
  * @param admm_adjust   Factor by which the ADMM penalty can increase/decrease
  * @param maxiter       Maximum number of iterations
@@ -40,13 +40,13 @@
  */
 template <typename F, typename G> 
 int admm(F projection, G selection, 
-         const arma::mat& input, 
-         arma::mat& x, arma::mat& z, arma::mat& u, arma::mat& z_old, 
+         const arma::mat& input, arma::mat& z, arma::mat& u, 
          double& admm_penalty, const double& admm_adjust,
          int maxiter, const double& tolerance)
 {
   int niter;
   double rr, ss;
+  arma::mat x(z.n_rows, z.n_cols), z_old(z.n_rows, z.n_cols);
 
   for(niter = 0; niter < maxiter; niter++) {
     // Store previous value of z

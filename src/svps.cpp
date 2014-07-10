@@ -129,10 +129,8 @@ List svps(NumericMatrix x, double ndim,
   }
 
   // ADMM variables
-  mat     h = zeros<mat>(_x.n_rows, _x.n_cols), 
-          z = zeros<mat>(_x.n_rows, _x.n_cols),
-          u = zeros<mat>(_x.n_rows, _x.n_cols),
-          z_old = zeros<mat>(_x.n_rows, _x.n_cols);
+  mat z = zeros<mat>(_x.n_rows, _x.n_cols),
+      u = zeros<mat>(_x.n_rows, _x.n_cols);
 
   // ADMM parameters
   double tolerance_abs = std::sqrt(ndim) * tolerance,
@@ -146,7 +144,7 @@ List svps(NumericMatrix x, double ndim,
     // ADMM
     niter[i] = admm(SingularValueProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    _x, h, z, u, z_old, 
+                    _x, z, u, 
                     admm_penalty, admm_adjust,
                     maxiter, tolerance_abs);
 
