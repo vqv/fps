@@ -41,6 +41,7 @@ print.fps_coef <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #'
 #' @param x       svps object
 #' @param digits  number of significant digits
+#' @param ...     further arguments passed to or from other methods.
 #' @export
 print.svps <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   print(cbind(

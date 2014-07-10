@@ -9,6 +9,8 @@
 \item{x}{svps object}
 
 \item{digits}{number of significant digits}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 This function prints
