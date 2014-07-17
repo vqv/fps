@@ -7,7 +7,8 @@
 #' Fantope Project and Select
 #'
 #' @useDynLib fps
-#' @import ggplot2 reshape2 grid scales
+#' @import ggplot2 reshape2 grid scales RcppArmadillo
+#' @importFrom Rcpp evalCpp
 #' @name fps
 #' @docType package
 NULL
