@@ -11,7 +11,7 @@ Use [devtools](https://github.com/hadley/devtools) to install directly from GitH
 
 ```R
 library(devtools)
-install_bitbucket("fps", "vqv", 
+install_bitbucket("svd", "vqv", 
                   auth_user = "yourbitbucketusername", 
                   password = "yourbitbucketpassword")
 ```
