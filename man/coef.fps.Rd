@@ -10,7 +10,7 @@
 
 \item{lambda}{lambda value to extract}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to or from other methods}
 }
 \description{
 Returns estimated basis vectors

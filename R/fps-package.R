@@ -4,7 +4,7 @@
 # Copyright 2014 Vincent Q. Vu. All rights reserved
 # 
 
-#' Fantope Project and Select
+#' Fantope Projection and Selection
 #'
 #' @useDynLib fps
 #' @import ggplot2 reshape2 grid scales RcppArmadillo

@@ -53,7 +53,7 @@ Selection (FPS) estimator.  It takes a symmetric matrix \code{S} as input
 and returns an object containing a list of projection matrices
 estimated by FPS over a sequence of regularization parameter values.
 
-Fantope Project and Select
+Fantope Projection and Selection
 }
 \details{
 By default, a sensible minimum value of the regularization parameter
