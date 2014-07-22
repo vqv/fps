@@ -8,9 +8,10 @@ projection(object, ...)
 \arguments{
 \item{object}{object}
 
-\item{...}{further arguments passed to or from other methods}
+\item{...}{other arguments}
 }
 \description{
-Extract projection matrix estimate
+\code{projection} is a generic function for extracting a fitted projection
+matrix from a dimension reduction object
 }
 
