@@ -5,8 +5,9 @@
 \alias{fps-package}
 \title{Fantope Projection and Selection}
 \usage{
-fps(S, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
-  maxnvar = -1L, maxiter = 100L, tolerance = 0.001, verbose = 0L)
+fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1,
+  lambda = as.numeric(c()), maxiter = 100L, tolerance = 0.001,
+  verbose = 0L)
 }
 \arguments{
 \item{S}{Input matrix (assumed to be symmetric)}
@@ -15,13 +16,13 @@ fps(S, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
 
 \item{nsol}{Number of solutions to compute}
 
-\item{lambda}{Vector of regularization parameter values}
+\item{maxnvar}{Suggested maximum number of variables to include
+(ignored if \code{maxnvar <= 0})}
 
 \item{lambdamin}{Minimum value of lambda (set automatically if
 \code{lambdamin < 0})}
 
-\item{maxnvar}{Suggested maximum number of variables to include
-(ignored if \code{maxnvar <= 0})}
+\item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxnvr, and lambdamin if nonempty}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 
@@ -53,7 +54,7 @@ Selection (FPS) estimator.  It takes a symmetric matrix \code{S} as input
 and returns an object containing a list of projection matrices
 estimated by FPS over a sequence of regularization parameter values.
 
-Fantope Projection and Selection
+Fantope Project and Select
 }
 \details{
 By default, a sensible minimum value of the regularization parameter

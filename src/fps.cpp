@@ -33,11 +33,11 @@ using namespace arma;
 //' @param S              Input matrix (assumed to be symmetric)
 //' @param ndim           Target subspace dimension (can be fractional)
 //' @param nsol           Number of solutions to compute
-//' @param lambda         Vector of regularization parameter values
-//' @param lambdamin      Minimum value of lambda (set automatically if 
-//'                       \code{lambdamin < 0})
 //' @param maxnvar        Suggested maximum number of variables to include 
 //'                       (ignored if \code{maxnvar <= 0})
+//' @param lambdamin      Minimum value of lambda (set automatically if 
+//'                       \code{lambdamin < 0})
+//' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
 //' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
@@ -84,12 +84,10 @@ using namespace arma;
 //' }
 //'
 // [[Rcpp::export]]
-List fps(NumericMatrix S, double ndim,
+List fps(NumericMatrix S, double ndim, int nsol = 50, 
+         int maxnvar = -1, double lambdamin = -1, 
          NumericVector lambda = NumericVector::create(), 
-         int nsol = 50, double lambdamin = -1, int maxnvar = -1, 
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
-
-  const mat _S(S.begin(), S.nrow(), S.ncol(), false);
 
   if(S.nrow() < 2) stop("Expected S to be a matrix");
   if(ndim <= 0.0 || ndim >= S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");

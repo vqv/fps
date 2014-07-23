@@ -15,11 +15,11 @@
 #' @param S              Input matrix (assumed to be symmetric)
 #' @param ndim           Target subspace dimension (can be fractional)
 #' @param nsol           Number of solutions to compute
-#' @param lambda         Vector of regularization parameter values
-#' @param lambdamin      Minimum value of lambda (set automatically if 
-#'                       \code{lambdamin < 0})
 #' @param maxnvar        Suggested maximum number of variables to include 
 #'                       (ignored if \code{maxnvar <= 0})
+#' @param lambdamin      Minimum value of lambda (set automatically if 
+#'                       \code{lambdamin < 0})
+#' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvr, and lambdamin if nonempty
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold
 #' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
@@ -65,7 +65,7 @@
 #' print(v)
 #' }
 #'
-fps <- function(S, ndim, lambda = as.numeric( c()), nsol = 50L, lambdamin = -1, maxnvar = -1L, maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_fps', PACKAGE = 'fps', S, ndim, lambda, nsol, lambdamin, maxnvar, maxiter, tolerance, verbose)
+fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxnvar, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 
