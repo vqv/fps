@@ -19,7 +19,7 @@
 #'                       (ignored if \code{maxnvar <= 0})
 #' @param lambdamin      Minimum value of lambda (set automatically if 
 #'                       \code{lambdamin < 0})
-#' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvr, and lambdamin if nonempty
+#' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold
 #' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 

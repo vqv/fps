@@ -89,6 +89,8 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
          NumericVector lambda = NumericVector::create(), 
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
+  const mat _S(S.begin(), S.nrow(), S.ncol(), false);
+
   if(S.nrow() < 2) stop("Expected S to be a matrix");
   if(ndim <= 0.0 || ndim >= S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");
 
