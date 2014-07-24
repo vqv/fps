@@ -3,9 +3,9 @@
 \alias{svps}
 \title{Singular Value Projection and Selection}
 \usage{
-svps(x, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
-  lambdaminratio = -1, maxnrow = -1L, maxncol = -1L, maxiter = 100L,
-  tolerance = 0.001, verbose = 0L)
+svps(x, ndim, nsol = 50L, maxnrow = -1L, maxncol = -1L,
+  lambdaminratio = -1, lambdamin = -1, lambda = as.numeric(c()),
+  maxiter = 100L, tolerance = 0.001, verbose = 0L)
 }
 \arguments{
 \item{x}{Input matrix}
@@ -14,20 +14,20 @@ svps(x, ndim, lambda = as.numeric(c()), nsol = 50L, lambdamin = -1,
 
 \item{nsol}{Number of solutions to compute}
 
-\item{lambda}{Vector of regularization parameter values}
-
-\item{lambdamin}{Minimum value of lambda (set automatically if
-\code{lambdamin < 0})}
-
-\item{lambdaminratio}{Minimum value of lambda as a fraction of
-the automatically determined maximum value of
-lambda (ignored if \code{lambdaminratio < 0})}
-
 \item{maxnrow}{Suggested maximum number of rows to include
 (ignored if \code{maxnrow <= 0})}
 
 \item{maxncol}{Suggested maximum number of cols to include
 (ignored if \code{maxnrow <= 0})}
+
+\item{lambdaminratio}{Minimum value of lambda as a fraction of
+the automatically determined maximum value of
+lambda (ignored if \code{lambdaminratio < 0})}
+
+\item{lambdamin}{Minimum value of lambda (set automatically if
+\code{lambdamin < 0})}
+
+\item{lambda}{Vector of regularization parameter values}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 

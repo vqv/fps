@@ -33,16 +33,16 @@ using namespace arma;
 //' @param x              Input matrix
 //' @param ndim           Target subspace dimension (can be fractional)
 //' @param nsol           Number of solutions to compute
-//' @param lambda         Vector of regularization parameter values
-//' @param lambdamin      Minimum value of lambda (set automatically if 
-//'                       \code{lambdamin < 0})
-//' @param lambdaminratio Minimum value of lambda as a fraction of 
-//'                       the automatically determined maximum value of 
-//'                       lambda (ignored if \code{lambdaminratio < 0})
 //' @param maxnrow        Suggested maximum number of rows to include 
 //'                       (ignored if \code{maxnrow <= 0})
 //' @param maxncol        Suggested maximum number of cols to include 
 //'                       (ignored if \code{maxnrow <= 0})
+//' @param lambdaminratio Minimum value of lambda as a fraction of 
+//'                       the automatically determined maximum value of 
+//'                       lambda (ignored if \code{lambdaminratio < 0})
+//' @param lambdamin      Minimum value of lambda (set automatically if 
+//'                       \code{lambdamin < 0})
+//' @param lambda         Vector of regularization parameter values
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
 //' @param verbose        Level of verbosity (silent if \code{verbose = 0}; 
@@ -81,9 +81,9 @@ using namespace arma;
 //'
 // [[Rcpp::export]]
 List svps(NumericMatrix x, double ndim,
+          int nsol = 50, int maxnrow = -1, int maxncol = -1, 
+          double lambdaminratio = -1, double lambdamin = -1, 
           NumericVector lambda = NumericVector::create(), 
-          int nsol = 50, double lambdamin = -1, double lambdaminratio = -1, 
-          int maxnrow = -1, int maxncol = -1, 
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
   if(x.ncol() < 2 || x.nrow() < 2) {
