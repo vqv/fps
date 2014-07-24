@@ -41,6 +41,10 @@
 #'   \item{niter}{a vector containing the number of ADMM iterations for each 
 #'                estimate}
 #'
+#' @details
+#' For large input matrices (1000-by-1000 or larger) it is recommended 
+#' that the \code{maxnvar} argument be set to a reasonably small number.
+#'
 #' @export
 #'
 #' @examples
@@ -55,7 +59,7 @@
 #' noise <- apply(wine[, j], 2, sample, replace = TRUE)
 #' colnames(noise) <- rep('noise', ncol(noise))
 #' x <- cbind(wine, noise)
-#' out <- fps(cor(x), ndim = 2, verbose = 1)
+#' out <- fps(cor(x), ndim = 2, maxnvar = 50, verbose = 1)
 #'
 #' \dontrun{
 #' # Choose lambda by cross-validation (this may take a few minutes)

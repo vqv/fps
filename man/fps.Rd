@@ -60,6 +60,9 @@ Fantope Project and Select
 By default, a sensible minimum value of the regularization parameter
 is automatically chosen so that the minimally regularized solution
 is different from PCA.
+
+For large input matrices (1000-by-1000 or larger) it is recommended
+that the \code{maxnvar} argument be set to a reasonably small number.
 }
 \examples{
 # Apply FPS to the standardized wine data from the UCI ML repository
@@ -73,7 +76,7 @@ j <- sample(1:ncol(wine), size = 500 - ncol(wine), replace = TRUE)
 noise <- apply(wine[, j], 2, sample, replace = TRUE)
 colnames(noise) <- rep('noise', ncol(noise))
 x <- cbind(wine, noise)
-out <- fps(cor(x), ndim = 2, verbose = 1)
+out <- fps(cor(x), ndim = 2, maxnvar = 50, verbose = 1)
 
 \dontrun{
 # Choose lambda by cross-validation (this may take a few minutes)
