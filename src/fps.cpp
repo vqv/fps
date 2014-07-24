@@ -89,10 +89,14 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
          NumericVector lambda = NumericVector::create(), 
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
-  const mat _S(S.begin(), S.nrow(), S.ncol(), false);
-
+  // Sanity checks
   if(S.nrow() < 2) stop("Expected S to be a matrix");
   if(ndim <= 0.0 || ndim >= S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");
+  if(nsol < 1) stop("Expected nsol > 0");
+  if(maxiter < 1) stop("Expected maxiter > 0");
+  if(tolerance <= 0.0) stop("Expected tolerance > 0");
+
+  const mat _S(S.begin(), S.nrow(), S.ncol(), false);
 
   // Generate lambda sequence if necessary
   vec _lambda;

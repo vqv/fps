@@ -22,7 +22,7 @@ fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1,
 \item{lambdamin}{Minimum value of lambda (set automatically if
 \code{lambdamin < 0})}
 
-\item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxnvr, and lambdamin if nonempty}
+\item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 
