@@ -4,6 +4,13 @@
 # Copyright 2014 Vincent Q. Vu. All rights reserved
 # 
 
+#' Cross-validate
+#' 
+#' \code{cv} is a generic function for cross-validating
+#'
+#' @param object  object
+#' @param ...     other arguments
+#' @export
 cv <- function(object, ...) UseMethod("cv")
 
 #' Estimate projection score by cross-validation
