@@ -19,6 +19,49 @@
 using namespace Rcpp;
 using namespace arma;
 
+// Computes a set of indices that contains the active variables of an SVPS
+// solution.
+void find_active(uvec& active_row, uvec& active_col, 
+                 const vec& max_row, const vec& max_col, 
+                 const double lambda, const double ndim) {
+
+  active_row = find(max_row > lambda);
+  active_col = find(max_col > lambda);
+
+  // Make sure there is at least one active row/col
+  if (active_row.n_elem == 0) find(max_row == max(max_row));
+  if (active_col.n_elem == 0) find(max_col == max(max_col));
+}
+
+// Computes minimum and maximum values for lambda based on theory 
+// and heuristic.
+void compute_lambdarange(double& lambdamin, double& lambdamax, 
+                         const double lambdaminratio, 
+                         const vec& max_row, const vec& max_col,
+                         const int maxnrow, const int maxncol, 
+                         const double ndim) {
+
+  lambdamax = std::max(max_row.max(), max_col.max());
+
+  if (lambdamin < 0) {
+    if (lambdaminratio < 0) {
+      lambdamin = lambdamax * lambdaminratio;
+    } else {
+      lambdamin = std::min(max_row.min(), max_col.min());
+    }
+  }
+
+  if (maxncol > 0 && (uword) maxncol < max_col.n_elem) {
+    vec m = sort(max_row, "descend");
+    lambdamin = std::max(lambdamin, m[maxncol]);
+  }
+
+  if (maxnrow > 0 && (uword) maxnrow < max_row.n_elem) {
+    vec m = sort(max_row, "descend");
+    lambdamin = std::max(lambdamin, m[maxnrow]);
+  }
+}
+
 //' Singular Value Projection and Selection
 //'
 //' This function computes a solution path of the Singular Value Projection 
@@ -106,33 +149,12 @@ List svps(NumericMatrix x, double ndim,
   vec _lambda;
   if(lambda.size() > 0) {
     _lambda = vec(lambda.begin(), lambda.size(), false);
+    lambdamin = min(_lambda);
     nsol = lambda.size();
   } else {
-    // Compute lambdamin and lambdamax automatically
-    double lambdamax = std::max(max_row.max(), max_col.max());
-
-    // Since several arguments may specify lambdamin indirectly, 
-    // the strategy is to choose the largest one.
-    if(lambdamin < 0) {
-      // Set lambdamin as a ratio of lambdamax?
-      if(lambdaminratio < 0) {
-        lambdamin = std::min(max_row.min(), max_col.min());
-      } else {
-        lambdamin = lambdamax * lambdaminratio;
-      }
-
-      // Override lambdamin if maxnrow or maxncol specified
-      if(maxnrow > 0 && (uword) maxnrow < _x.n_rows) {
-        vec max_row_sorted = sort(max_row, "descend");
-        lambdamin = std::max(lambdamin, max_row[maxnrow]);
-      }
-
-      if(maxncol > 0 && (uword) maxncol < _x.n_cols) {
-        vec max_col_sorted = sort(max_col, "descend");
-        lambdamin = std::max(lambdamin, max_col[maxncol]);
-      }
-    }
-
+    double lambdamax;
+    compute_lambdarange(lambdamin, lambdamax, lambdaminratio, 
+                        max_row, max_col, maxnrow, maxncol, ndim);
     loglinearseq(_lambda, lambdamin, lambdamax, nsol);
   }
 
@@ -156,9 +178,19 @@ List svps(NumericMatrix x, double ndim,
                                                  _["lambda"] = R_NilValue);
   }
 
+  // Find active variables
+  uvec active_row, active_col;
+  find_active(active_row, active_col, max_row, max_col, lambdamin, ndim);
+  mat x_working = _x.submat(active_row, active_col);
+  if (verbose > 0 && (active_row.n_elem < _x.n_rows || 
+                      active_col.n_elem < _x.n_cols)) {
+    Rcout << "Reduced active set size to " 
+          << active_row.n_elem << " by " << active_col.n_elem << std::endl;
+  }
+
   // ADMM variables
-  mat z = zeros<mat>(_x.n_rows, _x.n_cols),
-      u = zeros<mat>(_x.n_rows, _x.n_cols);
+  mat z = zeros<mat>(x_working.n_rows, x_working.n_cols),
+      u = zeros<mat>(x_working.n_rows, x_working.n_cols);
 
   // ADMM parameters
   double tolerance_abs = std::sqrt(ndim) * tolerance,
@@ -172,7 +204,7 @@ List svps(NumericMatrix x, double ndim,
     // ADMM
     niter[i] = admm(SingularValueProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    _x, z, u, 
+                    x_working, z, u, 
                     admm_penalty, admm_adjust,
                     maxiter, tolerance_abs);
 
@@ -180,14 +212,14 @@ List svps(NumericMatrix x, double ndim,
     NumericMatrix p(_x.n_rows, _x.n_cols);
     p.attr("dimnames") = x.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    _p = z;
+    _p.submat(active_row, active_col) = z;
     projection(i) = p;
 
     L1(i) = norm(vectorise(z), 1);
-    var_row(i) = accu(square(_x.t() * z)); // trace(xx' zz')
-    var_col(i) = accu(square(_x * z.t())); // trace(x'x z'z)
-    _leverage_row.col(i) = vectorise(sum(square(z), 1));
-    _leverage_col.col(i) = vectorise(sum(square(z), 0));
+    var_row(i) = accu(square(x_working.t() * z)); // trace(xx' zz')
+    var_col(i) = accu(square(x_working * z.t())); // trace(x'x z'z)
+    _leverage_row.col(i) = vectorise(sum(square(_p), 1));
+    _leverage_col.col(i) = vectorise(sum(square(_p), 0));
 
     if(verbose > 1) Rcout << niter[i];
     if(verbose > 2) Rcout << "(" << admm_penalty << ")";
