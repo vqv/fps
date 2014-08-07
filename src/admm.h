@@ -9,9 +9,6 @@
 #define __ADMM_H
 
 #include <RcppArmadillo.h>
-#include <list>
-#include <cmath>
-#include <algorithm>
 #include "blockmat.h"
 
 /**
@@ -78,10 +75,10 @@ int admm(F projection, G selection,
     // Penalty adjustment (Boyd, et al. 2010)
     if (rr > 10.0 * ss) {
         admm_penalty = admm_penalty * admm_adjust;
-        u = u / admm_adjust;
+        u *= (1.0 / admm_adjust);
     } else if (ss > 10.0 * rr) {
         admm_penalty = admm_penalty / admm_adjust;
-        u = u * admm_adjust;
+        u *= admm_adjust;
     }
   } while (niter++ < maxiter);
 
@@ -99,24 +96,24 @@ int admm(F projection, G selection,
 
   struct block_data {
     arma::mat const *input;
-    arma::mat *z, *u, *x, *z_old;
+    arma::mat *z, *u, *x;
   };
   std::vector<block_data> data;
   data.reserve(input.size());
 
   auto ii = input.cbegin();
-  for(auto zi = z.begin(), ui = u.begin(), 
-           xi = x.begin(), oi = z_old.begin(); 
+  for(auto zi = z.begin(), ui = u.begin(), xi = x.begin();
       ii != input.cend();
-      ++ii, ++zi, ++ui, ++xi, ++oi) {
-    block_data d = {&*ii, &*zi, &*ui, &*xi, &*oi};
+      ++ii, ++zi, ++ui, ++xi) {
+    block_data d = {&*ii, &*zi, &*ui, &*xi};
     data.push_back(std::move(d));
   }
 
+  double rr, ss;
   int niter = 1;
   do {
     // Store previous value of z
-    for ( auto& d : data ) { *d.z_old = *d.z; };
+    z_old = z;
 
     // Projection
     for ( auto& d : data ) { *d.x = *d.z - *d.u + (*d.input / admm_penalty); }
@@ -130,13 +127,8 @@ int admm(F projection, G selection,
     for ( auto& d : data ) { *d.u += *d.x - *d.z; }
 
     // Compute primal and dual residual norms
-    double rr = 0, ss = 0;
-    for( auto& d : data ) {
-      rr += arma::accu(arma::square(*d.x - *d.z));
-      ss += arma::accu(arma::square(*d.z - *d.z_old));
-    }
-    rr = std::sqrt(rr);
-    ss = admm_penalty * std::sqrt(ss);
+    rr = dist(x, z), 
+    ss = admm_penalty * dist(z, z_old);
 
     // Check convergence criterion and return if converged
     if(rr < tolerance && ss < tolerance) { return niter; }
@@ -144,10 +136,10 @@ int admm(F projection, G selection,
     // Penalty adjustment (Boyd, et al. 2010)
     if(rr > 10.0 * ss) {
         admm_penalty = admm_penalty * admm_adjust;
-        for ( auto& d: data ) { *d.u /= admm_adjust; }
+        u *= (1.0 / admm_adjust);
     } else if(ss > 10.0 * rr) {
         admm_penalty = admm_penalty / admm_adjust;
-        for ( auto& d: data ) { *d.u *= admm_adjust; }
+        u *= admm_adjust;
     }
   } while(niter++ < maxiter);
 

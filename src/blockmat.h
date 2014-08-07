@@ -50,7 +50,17 @@ public:
   void eig_sym(std::list<arma::vec>& eigval, 
                std::list<arma::mat>& eigvec) const;
 
+  BlockMat& operator*=(const double& rhs) {
+    for (auto& x : blocks) {
+      x *= rhs;
+    }
+    return *this;
+  }
+
   friend double dot(const BlockMat& a, const BlockMat& b);
+  friend double dotsquare(const BlockMat& a, const BlockMat& b);
+  friend double tdotsquare(const BlockMat& a, const BlockMat& b);
+  friend double dist(const BlockMat& a, const BlockMat& b);
 
 protected:
   std::list<arma::mat> blocks;

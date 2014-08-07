@@ -214,8 +214,8 @@ List svps(NumericMatrix x, double ndim,
     projection(i) = p;
 
     L1(i) = block_z.sumabs();
-    var_row(i) = accu(square(_x.t() * _p)); // trace(xx' pp')
-    var_col(i) = accu(square(_x * _p.t())); // trace(x'x p'p)
+    var_row(i) = dotsquare(block_x, block_z); // trace(xx' pp')
+    var_col(i) = tdotsquare(block_x, block_z); // trace(x'x p'p)
     _leverage_row.col(i) = vectorise(sum(square(_p), 1));
     _leverage_col.col(i) = vectorise(sum(square(_p), 0));
 
