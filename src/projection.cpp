@@ -31,10 +31,10 @@ void FantopeProjection::operator()(mat& x) const {
 void FantopeProjection::operator()(BlockMat& x) const {  
 
   uvec rank;
-  std::list<vec> eigval;
-  std::list<mat> eigvec;
+  BlockVec eigval;
+  BlockMat eigvec;
 
-  x.eig_sym(eigval, eigvec);
+  eig_sym(eigval, eigvec, x);
   rank = simplex(eigval, d);
 
   // Reconstruct
@@ -83,10 +83,10 @@ void SingularValueProjection::operator()(mat& x) const {
 void SingularValueProjection::operator()(BlockMat& x) const {  
 
   uvec rank;
-  std::list<vec> s;
-  std::list<mat> u, v;
+  BlockVec s;
+  BlockMat u, v;
 
-  x.svd(u, s, v);
+  svd(u, s, v, x);
   rank = simplex(s, d, true);
 
   // Reconstruct
@@ -98,6 +98,10 @@ void SingularValueProjection::operator()(BlockMat& x) const {
     if(*ri < 1) {
       xi.zeros();
     } else {
+      // ui->shed_cols(*ri, ui->n_cols);
+      // si->shed_rows(*ri, si->n_elem);
+      // vi->shed_cols(*ri, ui->n_cols);
+      // xi = ui * diagmat(si) * vi.t();
       xi = (
         ui->cols(0, *ri - 1) * 
         diagmat(si->subvec(0, *ri - 1)) *

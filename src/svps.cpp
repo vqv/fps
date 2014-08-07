@@ -11,7 +11,6 @@
 #include <utility>
 #include <cmath>
 
-#include "blockmat.h"
 #include "admm.h"
 #include "projection.h"
 #include "softthreshold.h"
@@ -213,7 +212,7 @@ List svps(NumericMatrix x, double ndim,
     block_z.copy_to(_p);
     projection(i) = p;
 
-    L1(i) = block_z.sumabs();
+    L1(i) = sumabs(block_z);
     var_row(i) = dotsquare(block_x, block_z); // trace(xx' pp')
     var_col(i) = tdotsquare(block_x, block_z); // trace(x'x p'p)
     _leverage_row.col(i) = vectorise(sum(square(_p), 1));

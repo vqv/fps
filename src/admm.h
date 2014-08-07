@@ -9,7 +9,7 @@
 #define __ADMM_H
 
 #include <RcppArmadillo.h>
-#include "blockmat.h"
+#include "block/mat.h"
 
 /**
  * @brief               Projection and selection ADMM algorithm
@@ -66,8 +66,8 @@ int admm(F projection, G selection,
     u = u + x - z;
 
     // Compute primal and dual residual norms
-    rr = std::sqrt(arma::accu(arma::square(x - z)));
-    ss = admm_penalty * std::sqrt(arma::accu(arma::square(z - z_old)));
+    rr = arma::norm(arma::vectorise(x - z));
+    ss = admm_penalty * arma::norm(arma::vectorise(z - z_old));
 
     // Check convergence criterion and return if converged
     if (rr < tolerance && ss < tolerance) { return niter; }

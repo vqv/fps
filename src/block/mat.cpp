@@ -1,41 +1,11 @@
 //
-// blockmat.cpp
+// mat.cpp
 // 
 // Created by Vincent Q. Vu on 2014-08-07
 // Copyright 2014 Vincent Q. Vu. All rights reserved
 // 
-#include "blockmat.h"
+#include "mat.h"
 #include <cmath>
-
-double BlockMat::sumabs() const {
-  double s = 0;
-  for( const auto& b : blocks) {
-    s += norm(vectorise(b), 1);
-  }
-  return s;
-}
-
-void BlockMat::svd(std::list<arma::mat>& u, std::list<arma::vec>& s, 
-                   std::list<arma::mat>& v) const {
-  u.clear(); s.clear(); v.clear();
-  for (const auto& x : blocks) {
-    u.push_back(arma::mat());
-    s.push_back(arma::vec());
-    v.push_back(arma::mat());
-    arma::svd(u.back(), s.back(), v.back(), x);
-  }
-  return;
-}
-
-void BlockMat::eig_sym(std::list<arma::vec>& eigval, 
-                       std::list<arma::mat>& eigvec) const {
-  eigval.clear(); eigvec.clear();
-  for (const auto& x : blocks) {
-    eigval.push_back(arma::vec());
-    eigvec.push_back(arma::mat());
-    arma::eig_sym(eigval.back(), eigvec.back(), x);
-  }
-}
 
 // Trace inner product
 double dot(const BlockMat& a, const BlockMat& b) {
@@ -71,4 +41,31 @@ double dist(const BlockMat& a, const BlockMat& b) {
     x += arma::accu(arma::square(*ai - *bi));
   }
   return std::sqrt(x);
+}
+
+double sumabs(const BlockMat& x) {
+  double s = 0;
+  for(auto& b : x) {
+    s += norm(vectorise(b), 1);
+  }
+  return s;
+}
+
+void svd(BlockMat& u, BlockVec& s, BlockMat& v, const BlockMat& x) {
+  u.blocks.clear(); s.blocks.clear(); v.blocks.clear();
+  for (auto& b : x) {
+    u.blocks.push_back(arma::mat());
+    s.blocks.push_back(arma::vec());
+    v.blocks.push_back(arma::mat());
+    arma::svd(u.blocks.back(), s.blocks.back(), v.blocks.back(), b);
+  }
+}
+
+void eig_sym(BlockVec& eigval, BlockMat& eigvec, const BlockMat& x) {
+  eigval.blocks.clear(); eigvec.blocks.clear();
+  for (auto& b : x) {
+    eigval.blocks.push_back(arma::vec());
+    eigvec.blocks.push_back(arma::mat());
+    arma::eig_sym(eigval.blocks.back(), eigvec.blocks.back(), b);
+  }
 }

@@ -220,7 +220,7 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
     block_z.copy_to(_p);
     projection(i) = p;
 
-    L1(i) = block_z.sumabs();
+    L1(i) = sumabs(block_z);
     varexplained(i) = dot(block_S, block_z);
     _leverage.col(i) = _p.diag();
 

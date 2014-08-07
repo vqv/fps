@@ -26,15 +26,6 @@ double simplex_sum(const vec& x, const double& theta) {
   return y;
 }
 
-class simplex_compare {
-  const vec& x;
-public:
-  explicit simplex_compare(const vec& x) : x(x) {}
-  bool operator() (const double& t, const double& z) const {
-    return simplex_sum(x, t) >= z;
-  }
-};
-
 /**
  * Projects x onto the simplex of z satisfying 0 <= z <= 1, <z,1> = d
  * @param  x            Vector to project
@@ -67,13 +58,15 @@ uword simplex(vec& x, double d, bool interior) {
   // Find the left-most knot whose function value is < d 
   // This knot is the right endpoint of the interval containing 
   // the solution of the piecewise linear equation
-  const double* t;
-  t = lower_bound(knots.begin(), knots.end(), d, simplex_compare(x));
+  auto t = std::lower_bound(knots.begin(), knots.end(), d, 
+            [&](const double& t, const double& z) {
+              return simplex_sum(x, t) >= z;
+            });
 
   // Interpolate
   double a , b, fa, fb, theta;
-  a = t[-1];
-  b = t[0];
+  b = *t;
+  a = *(--t);
   fa = simplex_sum(x, a);
   fb = simplex_sum(x, b);
   theta = a + (b-a) * (d-fa) / (fb-fa);
@@ -92,5 +85,91 @@ uword simplex(vec& x, double d, bool interior) {
   } );
 
   return rank;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Block versions
+///////////////////////////////////////////////////////////////////////////////
+
+double simplex_sum(const BlockVec& x, const double& theta) {
+
+  double y = 0.0;
+  for (auto& xi : x) {
+    for (double z : xi) {
+      z -= theta;
+      if (z > 1.0) {
+        y += 1.0;
+      } else if (z > 0.0) {
+        y += z;
+      }
+    }
+  }
+
+  return y;
+}
+
+uvec simplex(BlockVec& x, double d, bool interior) {
+
+  uvec rank(x.size(), fill::zeros);
+  auto ri = rank.begin();
+
+  // Interior of L1 and LInfinity balls
+  if (interior && simplex_sum(x, 0.0) <= d) {
+    for (auto& xi : x) {
+      xi.transform( [&](double d) {
+        if (d > 1.0) {
+          d = 1.0;
+        } else if (d < 0.0) {
+          d = 0.0;
+          return d;
+        }
+        ++(*ri);
+        return d;
+      } );
+      ++ri;
+    }
+    return rank;
+  }
+
+  // Construct set of knots, sorted in ascending order
+  std::set<double> knots;
+  for (const auto& xi : x) { 
+    knots.insert(xi.begin(), xi.end());
+    for (double z : xi) { knots.insert(z - 1.0); }
+  }
+
+  // Find the left-most knot whose function value is < d 
+  // This knot is the right endpoint of the interval containing 
+  // the solution of the piecewise linear equation
+  auto t = std::lower_bound(knots.begin(), knots.end(), d, 
+            [&](const double& t, const double& z) {
+              return simplex_sum(x, t) >= z;
+            });
+
+  // Interpolate
+  double a , b, fa, fb, theta;
+  b = *t;
+  a = *(--t);
+  fa = simplex_sum(x, a);
+  fb = simplex_sum(x, b);
+  theta = a + (b-a) * (d-fa) / (fb-fa);
+
+  // Perform the projection in-place
+  for (auto& xi : x) {
+    xi.transform( [&](double d) {
+      d -= theta;
+      if (d > 1.0) {
+        d = 1.0;
+      } else if (d < 0.0) {
+        d = 0.0;
+        return d;
+      }
+      ++(*ri);
+      return d;
+    } );
+    ++ri;
+  }
+  return rank;
+
 }
 
