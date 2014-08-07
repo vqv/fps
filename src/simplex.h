@@ -9,6 +9,6 @@
 
 #include <RcppArmadillo.h>
 
-int simplex(arma::vec& x, double d, bool interior = false);
+arma::uword simplex(arma::vec& x, double d, bool interior = false);
 
 #endif

@@ -10,13 +10,14 @@
 using namespace arma;
 
 double simplex_sum(const vec& x, const double& theta) {
-  double y = 0;
 
-  for(vec::const_iterator i = x.begin(); i != x.end(); i++) {
-    double z = *i - theta;
-    if(z > 1.0) {
+  double y = 0.0;
+
+  for (double z : x) {
+    z -= theta;
+    if (z > 1.0) {
       y += 1.0;
-    } else if(z > 0.0) {
+    } else if (z > 0.0) {
       y += z;
     }
   }
@@ -40,25 +41,26 @@ public:
  * @param  interior     Include interior of simplex (default false)
  * @return              Number of nonzeros in the projection
  */
-int simplex(vec& x, double d, bool interior) {
+uword simplex(vec& x, double d, bool interior) {
 
-  int rank = 0;
+  uword rank = 0;
 
   // Interior of L1 and LInfinity balls
   if(interior && simplex_sum(x, 0.0) <= d) {
-    for(vec::iterator i = x.begin(); i != x.end(); i++) {
-      if(*i > 1.0) {
-        *i = 1.0;
-      } else if(*i < 0.0) {
-        *i = 0.0;
-        continue;
+    x.transform( [&](double d) {
+      if (d > 1.0) {
+        d = 1.0;
+      } else if (d < 0.0) {
+        d = 0.0;
+        return d;
       }
-      rank++;
-    }
+      ++rank;
+      return d;
+    } );
     return rank;
   }
 
-  // Construct vector of knots
+  // Construct vector of knots, sorted in ascending order
   vec knots = unique(join_vert(x - 1.0, x));
 
   // Find the left-most knot whose function value is < d 
@@ -76,16 +78,17 @@ int simplex(vec& x, double d, bool interior) {
   theta = a + (b-a) * (d-fa) / (fb-fa);
 
   // Perform the projection in-place
-  for(vec::iterator i = x.begin(); i != x.end(); i++) {
-    *i -= theta;
-    if(*i > 1.0) {
-      *i = 1.0;
-    } else if(*i < 0.0) {
-      *i = 0.0;
-      continue;
+  x.transform( [&](double d) {
+    d -= theta;
+    if (d > 1.0) {
+      d = 1.0;
+    } else if (d < 0.0) {
+      d = 0.0;
+      return d;
     }
-    rank++;
-  }
+    ++rank;
+    return d;
+  } );
 
   return rank;
 }

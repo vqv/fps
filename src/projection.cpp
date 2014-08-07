@@ -11,7 +11,7 @@ using namespace arma;
 
 void FantopeProjection::operator()(mat& x) const {
 
-  int rank;
+  uword rank;
   vec eigval;
   mat eigvec;
 
@@ -30,7 +30,7 @@ void FantopeProjection::operator()(mat& x) const {
 
 void SingularValueProjection::operator()(mat& x) const {  
 
-  int rank;
+  uword rank;
   vec s;
   mat u, v;
 
