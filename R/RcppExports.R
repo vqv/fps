@@ -17,6 +17,9 @@
 #' @param nsol           Number of solutions to compute
 #' @param maxnvar        Suggested maximum number of variables to include 
 #'                       (ignored if \code{maxnvar <= 0})
+#' @param lambdaminratio Minimum value of lambda as a fraction of 
+#'                       the automatically determined maximum value of 
+#'                       lambda (ignored if \code{lambdaminratio < 0})
 #' @param lambdamin      Minimum value of lambda (set automatically if 
 #'                       \code{lambdamin < 0})
 #' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty
@@ -69,8 +72,8 @@
 #' print(v)
 #' }
 #'
-fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxnvar, lambdamin, lambda, maxiter, tolerance, verbose)
+fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxnvar, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 
 #' Singular Value Projection and Selection
@@ -87,10 +90,8 @@ fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1, lambda = as.
 #' @param x              Input matrix
 #' @param ndim           Target subspace dimension (can be fractional)
 #' @param nsol           Number of solutions to compute
-#' @param maxnrow        Suggested maximum number of rows to include 
-#'                       (ignored if \code{maxnrow <= 0})
-#' @param maxncol        Suggested maximum number of cols to include 
-#'                       (ignored if \code{maxnrow <= 0})
+#' @param maxnvar        Suggested maximum number of rows/columns to include 
+#'                       (ignored if \code{maxnvar <= 0})
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
 #'                       lambda (ignored if \code{lambdaminratio < 0})
@@ -105,19 +106,20 @@ fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1, lambda = as.
 #'
 #' @details
 #'
-#' The default automatic choice of lambdamin ensures that the least 
-#' regularized estimate omits at least one row or column.
+#' The default automatic choice of \code{lambdamin} ensures that the least 
+#' regularized estimate omits at least one row or column. The solutions 
+#' are automatically sorted in decreasing order of \code{lambda}.
 #'
 #' @return An S3 object of class \code{svps} which is a list with the 
 #'         following components:
-#'   \item{ndim}{sum of squares (dimension) of the estimate}
-#'   \item{lambda}{a vector containing the regularization parameters of each 
-#'                 estimate}
-#'   \item{projection}{a list containing the the (bi-)projection matrix 
+#'   \item{ndim}{Sum of squares (dimension) of the estimate}
+#'   \item{lambda}{Vector containing the regularization parameters of each 
+#'                 estimate.}
+#'   \item{projection}{List containing the the (bi-)projection matrix 
 #'                     estimates}
-#'   \item{leverage.row}{a matrix whose columns are the row leverages}
-#'   \item{leverage.col}{a matrix whose columns are the column leverages}
-#'   \item{L1}{a vector of the sum of absolute values of each estimate}
+#'   \item{leverage.row}{Matrix whose columns are the row leverages}
+#'   \item{leverage.col}{Matrix whose columns are the column leverages}
+#'   \item{L1}{Vector of the sum of absolute values of each estimate}
 #'   \item{var.row}{}
 #'   \item{var.col}{}
 #'   \item{var.total}{}
@@ -133,7 +135,7 @@ fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1, lambda = as.
 #' print(out)
 #' plot(out)
 #'
-svps <- function(x, ndim, nsol = 50L, maxnrow = -1L, maxncol = -1L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_svps', PACKAGE = 'fps', x, ndim, nsol, maxnrow, maxncol, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
+svps <- function(x, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_svps', PACKAGE = 'fps', x, ndim, nsol, maxnvar, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 

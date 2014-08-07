@@ -8,6 +8,7 @@
 #define __SOFTTHRESHOLD_H
 
 #include <algorithm>
+#include "blockmat.h"
 
 // Proximal operator for \lambda |x|_1
 struct SoftThresholdOp
@@ -39,6 +40,9 @@ struct EntrywiseSoftThreshold
   EntrywiseSoftThreshold(const double& lambda) : lambda(lambda) {}
   void operator()(arma::mat& x, const double& z) const {
     x.transform( SoftThresholdOp(z * lambda) );
+  }
+  void operator()(BlockMat& b, const double& z) const {
+    for (auto& x : b) { x.transform( SoftThresholdOp(z * lambda) ); }
   }
 private:
   const double lambda;

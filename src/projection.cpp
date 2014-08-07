@@ -28,6 +28,35 @@ void FantopeProjection::operator()(mat& x) const {
   return;
 }
 
+void FantopeProjection::operator()(BlockMat& x) const {  
+
+  uvec rank;
+  std::list<vec> eigval;
+  std::list<mat> eigvec;
+
+  x.eig_sym(eigval, eigvec);
+  rank = simplex(eigval, d);
+
+  // Reconstruct
+  auto ri = rank.begin();
+  auto di = eigval.cbegin();
+  auto vi = eigvec.cbegin();
+  for (auto& xi : x) {
+    if(*ri < 1) {
+      xi.zeros();
+    } else {
+      xi = (
+        vi->cols(vi->n_cols - *ri, vi->n_cols - 1) * 
+        diagmat(di->subvec(di->n_elem - *ri, di->n_elem - 1)) *
+        vi->cols(vi->n_cols - *ri, vi->n_cols - 1).t()
+      );
+    }
+    ++ri; ++di; ++vi;
+  }
+
+  return;
+}
+
 void SingularValueProjection::operator()(mat& x) const {  
 
   uword rank;
@@ -38,11 +67,45 @@ void SingularValueProjection::operator()(mat& x) const {
   rank = simplex(s, d, true);
 
   // Reconstruct
-  x = (
-    u.cols(0, rank - 1) * 
-    diagmat(s.subvec(0, rank - 1)) *
-    v.cols(0, rank - 1).t()
-  );
+  if (rank < 1) {
+    x.zeros();
+  } else {
+    x = (
+      u.cols(0, rank - 1) * 
+      diagmat(s.subvec(0, rank - 1)) *
+      v.cols(0, rank - 1).t()
+    );
+  }
+
+  return;
+}
+
+void SingularValueProjection::operator()(BlockMat& x) const {  
+
+  uvec rank;
+  std::list<vec> s;
+  std::list<mat> u, v;
+
+  x.svd(u, s, v);
+  rank = simplex(s, d, true);
+
+  // Reconstruct
+  auto ri = rank.begin();
+  auto si = s.cbegin();
+  auto ui = u.cbegin();
+  auto vi = v.cbegin();
+  for (auto& xi : x) {
+    if(*ri < 1) {
+      xi.zeros();
+    } else {
+      xi = (
+        ui->cols(0, *ri - 1) * 
+        diagmat(si->subvec(0, *ri - 1)) *
+        vi->cols(0, *ri - 1).t()
+      );
+    }
+    ++ri; ++si; ++ui; ++vi;
+  }
 
   return;
 }

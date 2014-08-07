@@ -11,55 +11,55 @@
 #include <utility>
 #include <cmath>
 
+#include "blockmat.h"
 #include "admm.h"
 #include "projection.h"
 #include "softthreshold.h"
+#include "graphsequence.h"
 #include "utility.h"
 
 using namespace Rcpp;
 using namespace arma;
 
-// Computes a set of indices that contains the active variables of an SVPS
-// solution.
-void find_active(uvec& active_row, uvec& active_col, 
-                 const vec& max_row, const vec& max_col, 
-                 const double lambda, const double ndim) {
-
-  active_row = find(max_row > lambda);
-  active_col = find(max_col > lambda);
-
-  // Make sure there is at least one active row/col
-  if (active_row.n_elem == 0) find(max_row == max(max_row));
-  if (active_col.n_elem == 0) find(max_col == max(max_col));
-}
-
 // Computes minimum and maximum values for lambda based on theory 
 // and heuristic.
-void compute_lambdarange(double& lambdamin, double& lambdamax, 
-                         const double lambdaminratio, 
-                         const vec& max_row, const vec& max_col,
-                         const int maxnrow, const int maxncol, 
-                         const double ndim) {
+void compute_lambdarange(const BiGraphSeq& gs, 
+                         double& lambdamin, double& lambdamax, 
+                         const double lambdaminratio, const int maxnvar) {
 
-  lambdamax = std::max(max_row.max(), max_col.max());
-
-  if (lambdamin < 0) {
-    if (lambdaminratio < 0) {
-      lambdamin = lambdamax * lambdaminratio;
-    } else {
-      lambdamin = std::min(max_row.min(), max_col.min());
+  for (const auto& i : gs) {
+    if (std::isfinite(i.first)) { 
+      lambdamax = i.first; 
+      break; 
     }
   }
 
-  if (maxncol > 0 && (uword) maxncol < max_col.n_elem) {
-    vec m = sort(max_row, "descend");
-    lambdamin = std::max(lambdamin, m[maxncol]);
+  if (lambdamin < 0) {
+    if (lambdaminratio < 0) {
+      // Set lambdamin to the last knot
+      lambdamin = std::min(gs.crbegin()->first, lambdamax);
+    } else {
+      lambdamin = lambdamax * lambdaminratio;
+    }
   }
 
-  if (maxnrow > 0 && (uword) maxnrow < max_row.n_elem) {
-    vec m = sort(max_row, "descend");
-    lambdamin = std::max(lambdamin, m[maxnrow]);
+  if (maxnvar <= 0) { 
+    return;
   }
+
+  // Find the first knot at which the maximum block size exceeds maxnvar
+  auto i = std::lower_bound(gs.cbegin(), gs.cend(), 2 * maxnvar, 
+    [](const BiGraphSeq::value_type& a, const int& b) {
+      arma::uword maxsize = 0;
+      for (const auto& j : a.second) {
+        maxsize = std::max(maxsize, j.second.first.n_elem 
+                                  + j.second.second.n_elem);
+      }
+      return maxsize < (arma::uword) b;
+    }
+  );
+  if(i != gs.cbegin()) { --i; }
+  lambdamin = std::min(i->first, lambdamax);
 }
 
 //' Singular Value Projection and Selection
@@ -76,10 +76,8 @@ void compute_lambdarange(double& lambdamin, double& lambdamax,
 //' @param x              Input matrix
 //' @param ndim           Target subspace dimension (can be fractional)
 //' @param nsol           Number of solutions to compute
-//' @param maxnrow        Suggested maximum number of rows to include 
-//'                       (ignored if \code{maxnrow <= 0})
-//' @param maxncol        Suggested maximum number of cols to include 
-//'                       (ignored if \code{maxnrow <= 0})
+//' @param maxnvar        Suggested maximum number of rows/columns to include 
+//'                       (ignored if \code{maxnvar <= 0})
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
 //'                       lambda (ignored if \code{lambdaminratio < 0})
@@ -94,19 +92,20 @@ void compute_lambdarange(double& lambdamin, double& lambdamax,
 //'
 //' @details
 //'
-//' The default automatic choice of lambdamin ensures that the least 
-//' regularized estimate omits at least one row or column.
+//' The default automatic choice of \code{lambdamin} ensures that the least 
+//' regularized estimate omits at least one row or column. The solutions 
+//' are automatically sorted in decreasing order of \code{lambda}.
 //'
 //' @return An S3 object of class \code{svps} which is a list with the 
 //'         following components:
-//'   \item{ndim}{sum of squares (dimension) of the estimate}
-//'   \item{lambda}{a vector containing the regularization parameters of each 
-//'                 estimate}
-//'   \item{projection}{a list containing the the (bi-)projection matrix 
+//'   \item{ndim}{Sum of squares (dimension) of the estimate}
+//'   \item{lambda}{Vector containing the regularization parameters of each 
+//'                 estimate.}
+//'   \item{projection}{List containing the the (bi-)projection matrix 
 //'                     estimates}
-//'   \item{leverage.row}{a matrix whose columns are the row leverages}
-//'   \item{leverage.col}{a matrix whose columns are the column leverages}
-//'   \item{L1}{a vector of the sum of absolute values of each estimate}
+//'   \item{leverage.row}{Matrix whose columns are the row leverages}
+//'   \item{leverage.col}{Matrix whose columns are the column leverages}
+//'   \item{L1}{Vector of the sum of absolute values of each estimate}
 //'   \item{var.row}{}
 //'   \item{var.col}{}
 //'   \item{var.total}{}
@@ -124,26 +123,25 @@ void compute_lambdarange(double& lambdamin, double& lambdamax,
 //'
 // [[Rcpp::export]]
 List svps(NumericMatrix x, double ndim,
-          int nsol = 50, int maxnrow = -1, int maxncol = -1, 
+          int nsol = 50, int maxnvar = -1, 
           double lambdaminratio = -1, double lambdamin = -1, 
           NumericVector lambda = NumericVector::create(), 
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
   // Sanity checks
-  if(x.ncol() < 2 || x.nrow() < 2) stop("Expected x to be a matrix");
-  if(ndim <= 0.0 || ndim >= std::min(x.nrow(), x.ncol())) {
+  if (x.ncol() < 2 || x.nrow() < 2) stop("Expected x to be a matrix");
+  if (ndim <= 0.0 || ndim >= std::min(x.nrow(), x.ncol())) {
     stop("Expected ndim to be between 0 and the number of rows/columns of S");
   }
-  if(nsol < 1) stop("Expected nsol > 0");
-  if(maxiter < 1) stop("Expected maxiter > 0");
-  if(tolerance <= 0.0) stop("Expected tolerance > 0");
+  if (nsol < 1) stop("Expected nsol > 0");
+  if (maxiter < 1) stop("Expected maxiter > 0");
+  if (tolerance <= 0.0) stop("Expected tolerance > 0");
 
   // Map x to an arma::mat
   const mat _x(x.begin(), x.nrow(), x.ncol(), false);
 
-  // Compute row- and column-wise infinity norms.
-  vec max_row = vectorise(max(abs(_x), 1)), 
-      max_col = vectorise(max(abs(_x), 0));
+  // Compute the sequence of solution graphs
+  BiGraphSeq gs(_x, std::max(0.0, lambdamin));
 
   // Generate lambda sequence if necessary
   vec _lambda;
@@ -153,8 +151,7 @@ List svps(NumericMatrix x, double ndim,
     lambdamin = _lambda(nsol - 1);
   } else {
     double lambdamax;
-    compute_lambdarange(lambdamin, lambdamax, lambdaminratio, 
-                        max_row, max_col, maxnrow, maxncol, ndim);
+    compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio, maxnvar);
     loglinearseq(_lambda, lambdamin, lambdamax, nsol);
   }
 
@@ -171,26 +168,16 @@ List svps(NumericMatrix x, double ndim,
 
   // Set dimnames attribute of leverages array
   List dimnames(x.attr("dimnames"));
-  if(dimnames.size() > 0) {
+  if (dimnames.size() > 0) {
     leverage_row.attr("dimnames") = List::create(_["variable"] = dimnames[0],
                                                  _["lambda"] = R_NilValue);
     leverage_col.attr("dimnames") = List::create(_["variable"] = dimnames[1],
                                                  _["lambda"] = R_NilValue);
   }
 
-  // Find active variables
-  uvec active_row, active_col;
-  find_active(active_row, active_col, max_row, max_col, lambdamin, ndim);
-  mat x_working = _x.submat(active_row, active_col);
-  if (verbose > 0 && (active_row.n_elem < _x.n_rows || 
-                      active_col.n_elem < _x.n_cols)) {
-    Rcout << "Reduced active set size to " 
-          << active_row.n_elem << " by " << active_col.n_elem << std::endl;
-  }
-
   // ADMM variables
-  mat z = zeros<mat>(x_working.n_rows, x_working.n_cols),
-      u = zeros<mat>(x_working.n_rows, x_working.n_cols);
+  mat _z(_x.n_rows, _x.n_cols, fill::zeros),
+      _u(_x.n_rows, _x.n_cols, fill::zeros);
 
   // ADMM parameters
   double tolerance_abs = std::sqrt(ndim) * tolerance,
@@ -198,34 +185,45 @@ List svps(NumericMatrix x, double ndim,
          admm_adjust = 2.0;
 
   // Outer loop to compute solution path
-  for(int i = 0; i < nsol; i++) {
-    if(verbose > 0) Rcout << ".";
+  for (int i = 0; i < nsol; ++i) {
+    if (verbose > 0) Rcout << ".";
+
+    // Find active vertex partition and construct block matrix
+    const BiGraphSeq::partition_t& active = gs.get_active(_lambda[i]);
+
+    BlockMap<BiGraphSeq::vertex_t> block_x(_x, active), 
+                                   block_z(_z, active), 
+                                   block_u(_u, active);
 
     // ADMM
     niter[i] = admm(SingularValueProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    x_working, z, u, 
+                    block_x, block_z, block_u, 
                     admm_penalty, admm_adjust,
                     maxiter, tolerance_abs);
+
+    // Restore dense matrices
+    block_z.copy_to(_z);
+    block_u.copy_to(_u);
 
     // Store solution
     NumericMatrix p(_x.n_rows, _x.n_cols);
     p.attr("dimnames") = x.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    _p.submat(active_row, active_col) = z;
+    block_z.copy_to(_p);
     projection(i) = p;
 
-    L1(i) = norm(vectorise(z), 1);
-    var_row(i) = accu(square(x_working.t() * z)); // trace(xx' zz')
-    var_col(i) = accu(square(x_working * z.t())); // trace(x'x z'z)
+    L1(i) = block_z.sumabs();
+    var_row(i) = accu(square(_x.t() * _p)); // trace(xx' pp')
+    var_col(i) = accu(square(_x * _p.t())); // trace(x'x p'p)
     _leverage_row.col(i) = vectorise(sum(square(_p), 1));
     _leverage_col.col(i) = vectorise(sum(square(_p), 0));
 
-    if(verbose > 1) Rcout << niter[i];
-    if(verbose > 2) Rcout << "(" << admm_penalty << ")";
+    if (verbose > 1) Rcout << niter[i];
+    if (verbose > 2) Rcout << "(" << admm_penalty << ")";
   }
 
-  if(verbose > 0) Rcout << std::endl;
+  if (verbose > 0) Rcout << std::endl;
 
   // Return
   List out = List::create(

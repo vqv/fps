@@ -10,5 +10,6 @@
 #include <RcppArmadillo.h>
 
 arma::uword simplex(arma::vec& x, double d, bool interior = false);
+arma::uvec simplex(std::list<arma::vec>& x, double d, bool interior = false);
 
 #endif

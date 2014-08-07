@@ -8,11 +8,13 @@
 #define __PROJECTION_H
 
 #include <RcppArmadillo.h>
+#include "blockmat.h"
 
 struct FantopeProjection {
 
   FantopeProjection(double d) : d(d) {}
   void operator()(arma::mat& x) const;
+  void operator()(BlockMat& x) const;
 
 private:
   double d;
@@ -22,6 +24,7 @@ struct SingularValueProjection {
 
   SingularValueProjection(double d) : d(d) {}
   void operator()(arma::mat& x) const;
+  void operator()(BlockMat& x) const;
 
 private:
   double d;

@@ -5,9 +5,9 @@
 \alias{fps-package}
 \title{Fantope Projection and Selection}
 \usage{
-fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1,
-  lambda = as.numeric(c()), maxiter = 100L, tolerance = 0.001,
-  verbose = 0L)
+fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1,
+  lambdamin = -1, lambda = as.numeric(c()), maxiter = 100L,
+  tolerance = 0.001, verbose = 0L)
 }
 \arguments{
 \item{S}{Input matrix (assumed to be symmetric)}
@@ -18,6 +18,10 @@ fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdamin = -1,
 
 \item{maxnvar}{Suggested maximum number of variables to include
 (ignored if \code{maxnvar <= 0})}
+
+\item{lambdaminratio}{Minimum value of lambda as a fraction of
+the automatically determined maximum value of
+lambda (ignored if \code{lambdaminratio < 0})}
 
 \item{lambdamin}{Minimum value of lambda (set automatically if
 \code{lambdamin < 0})}

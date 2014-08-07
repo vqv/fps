@@ -5,8 +5,9 @@ Authors@R: c(person(c("Vincent", "Q"), "Vu", role = c("aut", "cre"), email =
     "vqv@stat.osu.edu"))
 Description: ADMM algorithm for FPS
 Depends:
-    R (>= 3.0.0)
+    R (>= 3.1.0)
 Imports:
+    BH,
     methods,
     ggplot2,
     grid,
@@ -14,7 +15,7 @@ Imports:
     Rcpp (>= 0.11.0),
     RcppArmadillo (>= 0.4.320.0),
     scales
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: BH, Rcpp, RcppArmadillo
 License: GPL (>= 2)
 Suggests:
     pcaPP

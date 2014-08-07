@@ -8,6 +8,7 @@
 #include <algorithm>
 
 using namespace arma;
+using namespace std;
 
 double simplex_sum(const vec& x, const double& theta) {
 
@@ -67,7 +68,7 @@ uword simplex(vec& x, double d, bool interior) {
   // This knot is the right endpoint of the interval containing 
   // the solution of the piecewise linear equation
   const double* t;
-  t = std::lower_bound(knots.begin(), knots.end(), d, simplex_compare(x));
+  t = lower_bound(knots.begin(), knots.end(), d, simplex_compare(x));
 
   // Interpolate
   double a , b, fa, fb, theta;
@@ -92,3 +93,4 @@ uword simplex(vec& x, double d, bool interior) {
 
   return rank;
 }
+

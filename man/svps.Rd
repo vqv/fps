@@ -3,9 +3,9 @@
 \alias{svps}
 \title{Singular Value Projection and Selection}
 \usage{
-svps(x, ndim, nsol = 50L, maxnrow = -1L, maxncol = -1L,
-  lambdaminratio = -1, lambdamin = -1, lambda = as.numeric(c()),
-  maxiter = 100L, tolerance = 0.001, verbose = 0L)
+svps(x, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1,
+  lambdamin = -1, lambda = as.numeric(c()), maxiter = 100L,
+  tolerance = 0.001, verbose = 0L)
 }
 \arguments{
 \item{x}{Input matrix}
@@ -14,11 +14,8 @@ svps(x, ndim, nsol = 50L, maxnrow = -1L, maxncol = -1L,
 
 \item{nsol}{Number of solutions to compute}
 
-\item{maxnrow}{Suggested maximum number of rows to include
-(ignored if \code{maxnrow <= 0})}
-
-\item{maxncol}{Suggested maximum number of cols to include
-(ignored if \code{maxnrow <= 0})}
+\item{maxnvar}{Suggested maximum number of rows/columns to include
+(ignored if \code{maxnvar <= 0})}
 
 \item{lambdaminratio}{Minimum value of lambda as a fraction of
 the automatically determined maximum value of
@@ -40,14 +37,14 @@ lambda (ignored if \code{lambdaminratio < 0})}
 \value{
 An S3 object of class \code{svps} which is a list with the
         following components:
-  \item{ndim}{sum of squares (dimension) of the estimate}
-  \item{lambda}{a vector containing the regularization parameters of each
-                estimate}
-  \item{projection}{a list containing the the (bi-)projection matrix
+  \item{ndim}{Sum of squares (dimension) of the estimate}
+  \item{lambda}{Vector containing the regularization parameters of each
+                estimate.}
+  \item{projection}{List containing the the (bi-)projection matrix
                     estimates}
-  \item{leverage.row}{a matrix whose columns are the row leverages}
-  \item{leverage.col}{a matrix whose columns are the column leverages}
-  \item{L1}{a vector of the sum of absolute values of each estimate}
+  \item{leverage.row}{Matrix whose columns are the row leverages}
+  \item{leverage.col}{Matrix whose columns are the column leverages}
+  \item{L1}{Vector of the sum of absolute values of each estimate}
   \item{var.row}{}
   \item{var.col}{}
   \item{var.total}{}
@@ -65,8 +62,9 @@ By default, a sensible minimum value of the regularization parameter
 is automatically chosen so that the minimally regularized solution
 is different from the ordinary SVD.
 
-The default automatic choice of lambdamin ensures that the least
-regularized estimate omits at least one row or column.
+The default automatic choice of \code{lambdamin} ensures that the least
+regularized estimate omits at least one row or column. The solutions
+are automatically sorted in decreasing order of \code{lambda}.
 }
 \examples{
 # Apply FPS to the standardized wine data from the UCI ML repository
