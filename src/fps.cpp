@@ -170,9 +170,9 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
   // Generate lambda sequence if necessary
   vec _lambda;
   if(lambda.size() > 0) {
-    _lambda = vec(lambda.begin(), lambda.size(), false);
-    lambdamin = min(_lambda);
-    nsol = lambda.size();
+    _lambda = arma::sort(vec(lambda.begin(), lambda.size()), "descend");
+    nsol = _lambda.n_elem;
+    lambdamin = _lambda(nsol - 1);
   } else {
     double lambdamax;
     compute_lambdarange(lambdamin, lambdamax, _S.diag(), maxoffdiag, 
