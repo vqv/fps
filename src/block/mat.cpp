@@ -52,20 +52,19 @@ double sumabs(const BlockMat& x) {
 }
 
 void svd(BlockMat& u, BlockVec& s, BlockMat& v, const BlockMat& x) {
-  u.blocks.clear(); s.blocks.clear(); v.blocks.clear();
+  u.resize(x.size()); s.resize(x.size()); v.resize(x.size());
+  auto ui = u.begin(); auto si = s.begin(); auto vi = v.begin();
   for (auto& b : x) {
-    u.blocks.push_back(arma::mat());
-    s.blocks.push_back(arma::vec());
-    v.blocks.push_back(arma::mat());
-    arma::svd(u.blocks.back(), s.blocks.back(), v.blocks.back(), b);
+    arma::svd(*ui, *si, *vi, b);
+    ++ui; ++si; ++vi;
   }
 }
 
 void eig_sym(BlockVec& eigval, BlockMat& eigvec, const BlockMat& x) {
-  eigval.blocks.clear(); eigvec.blocks.clear();
+  eigval.resize(x.size()); eigvec.resize(x.size());
+  auto di = eigval.begin(); auto vi = eigvec.begin();
   for (auto& b : x) {
-    eigval.blocks.push_back(arma::vec());
-    eigvec.blocks.push_back(arma::mat());
-    arma::eig_sym(eigval.blocks.back(), eigvec.blocks.back(), b);
+    arma::eig_sym(*di, *vi, b);
+    ++di; ++vi;
   }
 }

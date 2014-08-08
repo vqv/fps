@@ -8,14 +8,17 @@
 #define __BLOCK_BASE_H
 
 #include <RcppArmadillo.h>
-#include <list>
+#include <deque>
 
-template <typename bT>
+template <typename bT, typename Container = std::deque<bT> >
 class BlockBase {
 public:
-  typedef typename std::list<bT>::iterator iterator;
-  typedef typename std::list<bT>::const_iterator const_iterator;
-  typedef typename std::list<bT>::size_type size_type;
+  typedef typename Container::iterator iterator;
+  typedef typename Container::const_iterator const_iterator;
+  typedef typename Container::size_type size_type;
+  typedef typename Container::value_type value_type;
+  typedef typename Container::reference reference;
+  typedef typename Container::const_reference const_reference;
 
   size_type size() const { return blocks.size(); }
 
@@ -26,7 +29,16 @@ public:
   iterator begin() { return blocks.begin(); }
   iterator end() { return blocks.end(); }
 
-  std::list<bT> blocks;
+  reference back() { return blocks.back(); }
+  const_reference back() const { return blocks.back(); }
+
+  void clear() { return blocks.clear(); }
+  void push_back(const bT& value) { blocks.push_back(value); }
+  void push_back(bT&& value) { blocks.push_back(value); }
+  void resize(size_type count) { blocks.resize(count); }
+
+protected:
+  Container blocks;
 };
 
 #endif
