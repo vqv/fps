@@ -128,13 +128,13 @@ List svps(NumericMatrix x, double ndim,
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
   // Sanity checks
-  if (x.ncol() < 2 || x.nrow() < 2) stop("Expected x to be a matrix");
+  if (x.ncol() < 2 || x.nrow() < 2) { stop("Expected x to be a matrix"); }
   if (ndim <= 0.0 || ndim >= std::min(x.nrow(), x.ncol())) {
-    stop("Expected ndim to be between 0 and the number of rows/columns of S");
+    stop("Expected 0 < ndim < min(dim(x))");
   }
-  if (nsol < 1) stop("Expected nsol > 0");
-  if (maxiter < 1) stop("Expected maxiter > 0");
-  if (tolerance <= 0.0) stop("Expected tolerance > 0");
+  if (nsol < 1) { stop("Expected nsol > 0"); }
+  if (maxiter < 1) { stop("Expected maxiter > 0"); }
+  if (tolerance <= 0.0) { stop("Expected tolerance > 0"); }
 
   // Map x to an arma::mat
   const mat _x(x.begin(), x.nrow(), x.ncol(), false);
@@ -185,7 +185,7 @@ List svps(NumericMatrix x, double ndim,
 
   // Outer loop to compute solution path
   for (int i = 0; i < nsol; ++i) {
-    if (verbose > 0) Rcout << ".";
+    if (verbose > 0) { Rcout << "."; }
 
     // Find active vertex partition and construct block matrix
     const BiGraphSeq::partition_t& active = gs.get_active(_lambda[i]);
@@ -218,11 +218,11 @@ List svps(NumericMatrix x, double ndim,
     _leverage_row.col(i) = vectorise(sum(square(_p), 1));
     _leverage_col.col(i) = vectorise(sum(square(_p), 0));
 
-    if (verbose > 1) Rcout << niter[i];
-    if (verbose > 2) Rcout << "(" << admm_penalty << ")";
+    if (verbose > 1) { Rcout << niter[i]; }
+    if (verbose > 2) { Rcout << "(" << admm_penalty << ")"; }
   }
 
-  if (verbose > 0) Rcout << std::endl;
+  if (verbose > 0) { Rcout << std::endl; }
 
   // Return
   List out = List::create(

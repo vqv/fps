@@ -53,11 +53,11 @@ void compute_lambdarange(const GraphSeq& gs,
   // Find the first knot at which the maximum block size exceeds maxnvar
   auto i = std::lower_bound(gs.cbegin(), gs.cend(), 2 * maxnvar, 
     [](const GraphSeq::value_type& a, const int& b) {
-      arma::uword maxsize = 0;
+      uword maxsize = 0;
       for (const auto& j : a.second) {
         maxsize = std::max(maxsize, j.second.n_elem);
       }
-      return maxsize < (arma::uword) b;
+      return maxsize < (uword) b;
     }
   );
   if (i != gs.cbegin()) { --i; }
@@ -142,11 +142,11 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
   // Sanity checks
-  if (S.nrow() < 2) stop("Expected S to be a matrix");
-  if (ndim <= 0.0 || ndim >= S.nrow()) stop("Expected ndim to be between 0.0 and the number of rows/columns of S");
-  if (nsol < 1) stop("Expected nsol > 0");
-  if (maxiter < 1) stop("Expected maxiter > 0");
-  if (tolerance <= 0.0) stop("Expected tolerance > 0");
+  if (S.nrow() < 2) { stop("Expected S to be a matrix"); }
+  if (ndim <= 0.0 || ndim >= S.nrow()) { stop("Expected 0 < ndim < nrow(S)"); }
+  if (nsol < 1) { stop("Expected nsol > 0");
+  if (maxiter < 1) { stop("Expected maxiter > 0");
+  if (tolerance <= 0.0) { stop("Expected tolerance > 0");
 
   // Wrap the input matrix with an arma::mat
   const mat _S(S.begin(), S.nrow(), S.ncol(), false);
@@ -193,7 +193,7 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
 
   // Outer loop to compute solution path
   for (int i = 0; i < nsol; i++) {
-    if (verbose > 0) Rcout << ".";
+    if (verbose > 0) { Rcout << "."; }
 
     // Find active vertex partition and construct block matrix
     const GraphSeq::partition_t& active = gs.get_active(_lambda[i]);
@@ -224,11 +224,11 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
     varexplained(i) = dot(block_S, block_z);
     _leverage.col(i) = _p.diag();
 
-    if (verbose > 1) Rcout << niter[i];
-    if (verbose > 2) Rcout << "(" << admm_penalty << ")";
+    if (verbose > 1) { Rcout << niter[i]; }
+    if (verbose > 2) { Rcout << "(" << admm_penalty << ")"; }
   }
 
-  if (verbose > 0) Rcout << std::endl;
+  if (verbose > 0) { Rcout << std::endl; }
 
   // Return
   List out = List::create(
