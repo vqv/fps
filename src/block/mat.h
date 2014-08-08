@@ -46,24 +46,22 @@ public:
 
   BlockMap(const arma::mat& X, const indexmap_t& indexmap) {
     for (const auto& i : indexmap) {
-      if(i.second.first.n_elem == 0 || i.second.second.n_elem == 0) {
-        continue;
-      }
-      arma::mat b = X.submat(i.second.first, i.second.second);
+      index_t index = i.second;
+      if(index.first.n_elem == 0 || index.second.n_elem == 0) { continue; }
+
+      arma::mat b = X.submat(index.first, index.second);
       blocks.push_back(std::move(b));
-      indices.push_back(i.second);
+      indices.push_back(std::move(index));
     }
   }
 
   void copy_to(arma::mat& X) const {
-    auto i = indices.cbegin();
-    for (auto b = blocks.cbegin(); b != blocks.cend(); ++b, ++i) {
-      X.submat(i->first, i->second) = *b;
-    }
+    auto b = blocks.cbegin();
+    for (auto& i : indices) { X.submat(i.first, i.second) = *b++; }
   }
 
 protected:
-  std::list<index_t> indices;
+  std::deque<index_t> indices;
 };
 
 template <typename Key>
@@ -75,21 +73,22 @@ public:
 
   SymBlockMap(const arma::mat& X, const indexmap_t& indexmap) {
     for (const auto& i : indexmap) {
-      arma::mat b = X.submat(i.second, i.second);
+      index_t index = i.second;
+      if(index.n_elem == 0) { continue; }
+
+      arma::mat b = X.submat(index, index);
       blocks.push_back(std::move(b));
-      indices.push_back(i.second);
+      indices.push_back(std::move(index));
     }
   }
 
   void copy_to(arma::mat& X) const {
-    auto i = indices.cbegin();
-    for (auto b = blocks.cbegin(); b != blocks.cend(); ++b, ++i) {
-      X.submat(*i, *i) = *b;
-    }
+    auto b = blocks.cbegin();
+    for (auto& i : indices) { X.submat(i, i) = *b++; }
   }
 
 protected:
-  std::list<index_t> indices;
+  std::deque<index_t> indices;
 };
 
 #endif
