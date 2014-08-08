@@ -92,7 +92,7 @@ int admm(F projection, G selection,
          double& admm_penalty, const double admm_adjust, 
          const int maxiter, const double tolerance)
 {
-  BlockMat x(input), z_old(input);
+  BlockMat x(input), z_old;
 
   struct block_data {
     arma::mat const *input;

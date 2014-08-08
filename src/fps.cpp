@@ -195,6 +195,25 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
   for (int i = 0; i < nsol; i++) {
     if (verbose > 0) { Rcout << "."; }
 
+#ifdef FPS_DONT_USE_GRAPH_OPTIMIZATION
+    // ADMM
+    niter[i] = admm(FantopeProjection(ndim), 
+                    EntrywiseSoftThreshold(_lambda[i]), 
+                    _S, _z, _u, 
+                    admm_penalty, admm_adjust,
+                    maxiter, tolerance_abs);
+
+    // Store solution
+    NumericMatrix p(_S.n_rows, _S.n_cols);
+    p.attr("dimnames") = S.attr("dimnames");
+    mat _p(p.begin(), p.nrow(), p.ncol(), false);
+    _p = _z;
+    projection(i) = p;
+
+    L1(i) = norm(vectorise(_z), 1);
+    varexplained(i) = dot(_S, _z);
+    _leverage.col(i) = _p.diag();
+#else
     // Find active vertex partition and construct block matrix
     const GraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
@@ -223,6 +242,7 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
     L1(i) = sumabs(block_z);
     varexplained(i) = dot(block_S, block_z);
     _leverage.col(i) = _p.diag();
+#endif
 
     if (verbose > 1) { Rcout << niter[i]; }
     if (verbose > 2) { Rcout << "(" << admm_penalty << ")"; }

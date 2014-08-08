@@ -187,6 +187,27 @@ List svps(NumericMatrix x, double ndim,
   for (int i = 0; i < nsol; ++i) {
     if (verbose > 0) { Rcout << "."; }
 
+#ifdef FPS_DONT_USE_GRAPH_OPTIMIZATION
+    // ADMM
+    niter[i] = admm(SingularValueProjection(ndim), 
+                    EntrywiseSoftThreshold(_lambda[i]), 
+                    _x, _z, _u, 
+                    admm_penalty, admm_adjust,
+                    maxiter, tolerance_abs);
+
+    // Store solution
+    NumericMatrix p(_x.n_rows, _x.n_cols);
+    p.attr("dimnames") = x.attr("dimnames");
+    mat _p(p.begin(), p.nrow(), p.ncol(), false);
+    _p = _z;
+    projection(i) = p;
+
+    L1(i) = norm(vectorise(_z), 1);
+    var_row(i) = accu(square(_x.t() * _z)); // trace(xx' pp')
+    var_col(i) = accu(square(_x * _z.t())); // trace(x'x p'p)
+    _leverage_row.col(i) = vectorise(sum(square(_z), 1));
+    _leverage_col.col(i) = vectorise(sum(square(_z), 0));
+#else
     // Find active vertex partition and construct block matrix
     const BiGraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
@@ -217,6 +238,7 @@ List svps(NumericMatrix x, double ndim,
     var_col(i) = tdotsquare(block_x, block_z); // trace(x'x p'p)
     _leverage_row.col(i) = vectorise(sum(square(_p), 1));
     _leverage_col.col(i) = vectorise(sum(square(_p), 0));
+#endif
 
     if (verbose > 1) { Rcout << niter[i]; }
     if (verbose > 2) { Rcout << "(" << admm_penalty << ")"; }
