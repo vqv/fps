@@ -131,12 +131,23 @@ uvec simplex(BlockVec& x, double d, bool interior) {
     return rank;
   }
 
-  // Construct set of knots, sorted in ascending order
+  // Let x(j) denote the jth largest x.
+  // The root of the piecewise linear function must lie in the interval
+  // [x(d) - 1, x(d-1)]
+  // The knots of the function consist of the values of x and x - 1
   std::set<double> knots;
-  for (const auto& xi : x) { 
-    knots.insert(xi.begin(), xi.end());
-    for (double z : xi) { knots.insert(z - 1.0); }
-  }
+  for (const auto& xi : x) { knots.insert(xi.begin(), xi.end()); }
+
+  // Construct knots corresponding to x-1 -- sorted in descending order
+  std::vector<double> tmp(std::min(knots.size(), (size_t) std::ceil(d)));
+  auto i = knots.crbegin();
+  for (auto& t : tmp) { t = *i++ - 1; }
+
+  // Eliminate any knots that are smaller than x(d) - 1
+  knots.erase(knots.begin(), knots.lower_bound(*tmp.crbegin()));
+
+  // Insert x-1 knots
+  for (const auto& t : tmp) { knots.insert(knots.begin(), t); }
 
   // Find the left-most knot whose function value is < d 
   // This knot is the right endpoint of the interval containing 
