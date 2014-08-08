@@ -14,6 +14,27 @@ coef.fps <- function(object, lambda, ...) {
     return(v)
 }
 
+#' Extract basis vector estimates
+#'
+#' Returns estimated basis vectors
+#'
+#' @param       object fps object
+#' @param       lambda lambda value to extract
+#' @param ...   further arguments passed to or from other methods.
+#' @export
+coef.svps <- function(object, lambda, ...) {
+    i <- which.min(abs(object$lambda - lambda))
+    s <- svd(object$projection[[i]], 
+             nu = ceiling(object$ndim), nv = ceiling(object$ndim))
+
+    out <- list(u = s$u, v = s$v)
+    class(out) <- 'svps_coef'
+    rownames(out$u) <- rownames(object$projection[[i]])
+    rownames(out$v) <- colnames(object$projection[[i]])
+
+    return(out)
+}
+
 #' Extract projection matrix estimate
 #' 
 #' \code{projection} is a generic function for extracting a fitted projection 
@@ -45,5 +66,27 @@ projection.fps <- function(object, lambda, fixrank = FALSE, ...) {
     } else {
       i <- which.min(abs(object$lambda - lambda))
       object$projection[[i]] 
+    }
+}
+
+#' Extract projection estimates
+#'
+#' Returns estimated projection matrix
+#'
+#' @param object  fps object
+#' @param lambda  lambda value to extract
+#' @param type    row-, column-, or bi- projection?
+#' @param ...   further arguments passed to or from other methods.
+#' @export
+projection.svps <- function(object, lambda, 
+                            type = c('bi', 'row', 'column'), ...) {
+    type <- match.arg(type)
+    i <- which.min(abs(object$lambda - lambda))
+    if(type == 'row') {
+      tcrossprod(object$projection[[i]])
+    } else if(type == 'column') {
+      crossprod(object$projection[[i]])
+    } else {
+      object$projection[[i]]
     }
 }
