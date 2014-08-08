@@ -20,6 +20,10 @@ public:
   typedef typename Container::reference reference;
   typedef typename Container::const_reference const_reference;
 
+  BlockBase() : blocks() {}
+  explicit BlockBase(size_type count) : blocks(count) {}
+
+
   size_type size() const { return blocks.size(); }
 
   const_iterator cbegin() const { return blocks.cbegin(); }

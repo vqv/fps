@@ -92,13 +92,14 @@ int admm(F projection, G selection,
          double& admm_penalty, const double admm_adjust, 
          const int maxiter, const double tolerance)
 {
-  BlockMat x(input), z_old;
+  BlockMat x(input.size()), z_old(input.size());
 
   struct block_data {
     arma::mat const *input;
     arma::mat *z, *u, *x;
   };
   std::vector<block_data> data;
+
   data.reserve(input.size());
 
   auto ii = input.cbegin();

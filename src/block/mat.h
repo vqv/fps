@@ -27,6 +27,9 @@ public:
     return *this;
   }
 
+  BlockMat() : BlockBase<arma::mat>() {}
+  explicit BlockMat(size_type count) : BlockBase<arma::mat>(count) {}
+
   friend double dot(const BlockMat& a, const BlockMat& b);
   friend double dotsquare(const BlockMat& a, const BlockMat& b);
   friend double tdotsquare(const BlockMat& a, const BlockMat& b);
