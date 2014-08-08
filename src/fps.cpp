@@ -51,7 +51,7 @@ void compute_lambdarange(const GraphSeq& gs,
   }
 
   // Find the first knot at which the maximum block size exceeds maxnvar
-  auto i = std::lower_bound(gs.cbegin(), gs.cend(), 2 * maxnvar, 
+  auto i = std::lower_bound(gs.cbegin(), gs.cend(), maxnvar, 
     [](const GraphSeq::value_type& a, const int& b) {
       uword maxsize = 0;
       for (const auto& j : a.second) {
@@ -144,9 +144,9 @@ List fps(NumericMatrix S, double ndim, int nsol = 50,
   // Sanity checks
   if (S.nrow() < 2) { stop("Expected S to be a matrix"); }
   if (ndim <= 0.0 || ndim >= S.nrow()) { stop("Expected 0 < ndim < nrow(S)"); }
-  if (nsol < 1) { stop("Expected nsol > 0");
-  if (maxiter < 1) { stop("Expected maxiter > 0");
-  if (tolerance <= 0.0) { stop("Expected tolerance > 0");
+  if (nsol < 1) { stop("Expected nsol > 0"); }
+  if (maxiter < 1) { stop("Expected maxiter > 0"); }
+  if (tolerance <= 0.0) { stop("Expected tolerance > 0"); }
 
   // Wrap the input matrix with an arma::mat
   const mat _S(S.begin(), S.nrow(), S.ncol(), false);
