@@ -147,12 +147,11 @@ public:
     boost::disjoint_sets<arma::uword*, arma::uword*> ds(&rank[0], &parent[0]);
 
     // Initialize singleton partition
-    partition_t singletons;
     for (arma::uword v = 0; v < x.n_cols; ++v) {
       arma::uvec b(1);
       b[0] = v;
       ds.make_set(v);
-      current.emplace_hint(current.end(), ds.find_set(v), std::move(b));
+      current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
     }
     last_weight = std::numeric_limits<double>::infinity();
 
@@ -238,14 +237,13 @@ public:
     boost::disjoint_sets<Rank, Parent> ds(rank_pmap, parent_pmap);
 
     // Initialize singleton partition
-    partition_t singletons;
     for (arma::uword i = 0; i < x.n_rows; ++i) {
       vertex_t v = std::make_pair(0, i);
       block_t b;
       b.first.set_size(1);
       b.first[0] = i;
       ds.make_set(v);
-      singletons.emplace_hint(singletons.end(), ds.find_set(v), std::move(b));
+      current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
     }
     for (arma::uword j = 0; j < x.n_cols; ++j) {
       vertex_t v = std::make_pair(1, j);
@@ -253,10 +251,9 @@ public:
       b.second.set_size(1);
       b.second[0] = j;
       ds.make_set(v);
-      singletons.emplace_hint(singletons.end(), ds.find_set(v), std::move(b));
+      current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
     }
-    sequence.emplace(std::numeric_limits<double>::infinity(), 
-                     std::move(singletons));
+    last_weight = std::numeric_limits<double>::infinity();
 
     // Merge components until there is only one
     while (!edges.empty() && sequence.crbegin()->second.size() > 1) {
