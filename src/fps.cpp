@@ -136,7 +136,7 @@ void compute_lambdarange(const GraphSeq& gs,
 //' }
 //'
 // [[Rcpp::export]]
-List fps(NumericMatrix S, double ndim, int nsol = 50, 
+List fps(NumericMatrix S, double ndim, unsigned int nsol = 50, 
          int maxnvar = -1, double lambdaminratio = -1, double lambdamin = -1, 
          NumericVector lambda = NumericVector::create(), 
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {

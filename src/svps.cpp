@@ -122,7 +122,7 @@ void compute_lambdarange(const BiGraphSeq& gs,
 //'
 // [[Rcpp::export]]
 List svps(NumericMatrix x, double ndim,
-          int nsol = 50, int maxnvar = -1, 
+          unsigned int nsol = 50, int maxnvar = -1, 
           double lambdaminratio = -1, double lambdamin = -1, 
           NumericVector lambda = NumericVector::create(), 
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
