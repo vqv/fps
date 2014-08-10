@@ -26,39 +26,37 @@ void compute_lambdarange(const BiGraphSeq& gs,
                          double& lambdamin, double& lambdamax, 
                          const double lambdaminratio, const int maxnvar) {
 
-  for (const auto& i : gs) {
-    if (std::isfinite(i.first)) { 
-      lambdamax = i.first; 
-      break; 
-    }
-  }
+  lambdamax = gs.cbegin()->first;
 
   if (lambdamin < 0) {
     if (lambdaminratio < 0) {
-      // Set lambdamin to the last knot
-      lambdamin = std::min(gs.crbegin()->first, lambdamax);
-    } else {
+      // Set lambdamin to the last knot with 2 or more blocks
+      auto i = gs.crbegin();
+      while (i->second.size() == 1) { ++i; }
+      if (i == gs.crend()) { i = gs.crbegin(); }
+      lambdamin = std::min(i->first, lambdamax);
+    } else if (lambdaminratio <= 1.0) {
       lambdamin = lambdamax * lambdaminratio;
     }
   }
 
-  if (maxnvar <= 0) { 
-    return;
+  if (maxnvar > 0) { 
+    // Find the first knot at which the maximum block size (nrow + ncol)
+    // exceeds 2 * maxnvar
+    auto i = std::lower_bound(gs.cbegin(), gs.cend(), 2 * (uword) maxnvar, 
+      [](const BiGraphSeq::value_type& a, const uword& b) {
+        uword maxsize = 0;
+        for (const auto& j : a.second) {
+          maxsize = std::max(maxsize, j.second.first.n_elem + 
+                                      j.second.second.n_elem);
+        }
+        return maxsize < b;
+      }
+    );
+    if (i == gs.cend()) { --i; }
+    lambdamin = std::min(i->first, lambdamax);
   }
 
-  // Find the first knot at which the maximum block size exceeds maxnvar
-  auto i = std::lower_bound(gs.cbegin(), gs.cend(), 2 * maxnvar, 
-    [](const BiGraphSeq::value_type& a, const int& b) {
-      arma::uword maxsize = 0;
-      for (const auto& j : a.second) {
-        maxsize = std::max(maxsize, j.second.first.n_elem 
-                                  + j.second.second.n_elem);
-      }
-      return maxsize < (arma::uword) b;
-    }
-  );
-  if(i != gs.cbegin()) { --i; }
-  lambdamin = std::min(i->first, lambdamax);
 }
 
 //' Singular Value Projection and Selection

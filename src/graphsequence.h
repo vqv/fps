@@ -31,18 +31,10 @@ struct GraphSeqBase {
   typedef std::map<vertex_t, block_t> partition_t;
   typedef std::map<double, partition_t, std::greater<double>> sequence_t;
 
-  // Return the vertex partition corresponding to the  
-  // smallest weight that is larger than weight
-  const partition_t& get_active(const double& weight) const {
-    if(weight < sequence.crbegin()->first) {
-       return sequence.crbegin()->second;
-    } else {
-      typename sequence_t::const_iterator t;
-      t = sequence.lower_bound(weight);
-      return (--t)->second;
-    }
+  // The first partition whose weight is not > is active
+  const partition_t& get_active(const double weight) const {
+    return sequence.lower_bound(weight)->second;
   }
-
 
   // Expose a subset of the map interface to sequence
   typedef typename sequence_t::const_iterator const_iterator;
@@ -50,6 +42,9 @@ struct GraphSeqBase {
   typedef typename sequence_t::value_type value_type;
   typedef typename sequence_t::key_type key_type;
   typedef typename sequence_t::mapped_type mapped_type;
+  typedef typename sequence_t::size_type size_type;
+
+  size_type size() const { return sequence.size(); };
 
   mapped_type& operator[](const key_type& key) { return sequence[key]; }
   mapped_type& operator[](key_type&& key) { return sequence[key]; }
@@ -157,10 +152,9 @@ public:
       arma::uvec b(1);
       b[0] = v;
       ds.make_set(v);
-      singletons.emplace_hint(singletons.end(), ds.find_set(v), std::move(b));
+      current.emplace_hint(current.end(), ds.find_set(v), std::move(b));
     }
-    sequence.emplace(std::numeric_limits<double>::infinity(),
-                     std::move(singletons));
+    last_weight = std::numeric_limits<double>::infinity();
 
     // Merge components until there is only one
     while (!edges.empty() && sequence.crbegin()->second.size() > 1) {
@@ -171,29 +165,34 @@ public:
         p->second = arma::sort(p->second);
       }
     }
+
+    // Store the final partition
+    sequence.emplace_hint(sequence.cend(), lambdamin, current);
   }
 
 protected:
+  partition_t current;
+  double last_weight;
+
   void merge_blocks(const double& weight, 
                     const vertex_t& a, const vertex_t& b, 
                     const vertex_t& key) {
-    // Find the partition corresponding to weight
-    sequence_t::iterator s = sequence.find(weight);
-    if(s == sequence.end()) {
-      s = sequence.emplace_hint(sequence.end(), 
-                                weight, sequence.crbegin()->second);
+
+    // New knot so store the current partition
+    if (weight < last_weight) {
+      sequence.emplace_hint(sequence.cend(), weight, current);
+      last_weight = weight;
     }
-    partition_t *p = &s->second;
 
     partition_t::iterator pa, pb;
 
-    pa = p->find(a), 
-    pb = p->find(b);
+    pa = current.find(a), 
+    pb = current.find(b);
     block_t newblock = arma::join_vert(pa->second, pb->second);
 
-    p->erase(pa);
-    p->erase(pb);
-    p->emplace(key, std::move(newblock));
+    current.erase(pa);
+    current.erase(pb);
+    current.emplace(key, std::move(newblock));
   }
 };
 
@@ -270,31 +269,37 @@ public:
       }
     }
 
+    // Store the final partition
+    sequence.emplace_hint(sequence.cend(), lambdamin, current);
   }
 
 protected:
+
+
+  partition_t current;
+  double last_weight;
+
   void merge_blocks(const double& weight, 
                     const vertex_t& a, const vertex_t& b, 
                     const vertex_t& key) {
-    // Find the partition corresponding to weight w
-    sequence_t::iterator s = sequence.find(weight);
-    if(s == sequence.end()) {
-      s = sequence.emplace_hint(sequence.end(), 
-                                weight, sequence.crbegin()->second);
+
+    // New knot so store the current partition
+    if (weight < last_weight) {
+      sequence.emplace_hint(sequence.cend(), weight, current);
+      last_weight = weight;
     }
-    partition_t *p = &s->second;
 
     block_t newblock;
     partition_t::iterator pa, pb;
 
-    pa = p->find(a);
-    pb = p->find(b);
+    pa = current.find(a);
+    pb = current.find(b);
     newblock.first = arma::join_vert(pa->second.first, pb->second.first);
     newblock.second = arma::join_vert(pa->second.second, pb->second.second);
 
-    p->erase(pa);
-    p->erase(pb);
-    p->emplace(key, std::move(newblock));
+    current.erase(pa);
+    current.erase(pb);
+    current.emplace(key, std::move(newblock));
   }
 };
 

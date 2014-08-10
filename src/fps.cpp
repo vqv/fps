@@ -30,38 +30,35 @@ void compute_lambdarange(const GraphSeq& gs,
                          const double lambdaminratio, 
                          const int maxnvar, const double ndim) {
 
-  for (const auto& i : gs) {
-    if (std::isfinite(i.first)) { 
-      lambdamax = i.first; 
-      break; 
-    }
-  }
+  lambdamax = gs.cbegin()->first;
 
   if (lambdamin < 0) {
     if (lambdaminratio < 0) {
-      // Set lambdamin to the last knot
-      lambdamin = std::min(gs.crbegin()->first, lambdamax);
-    } else {
+      // Set lambdamin to the last knot with 2 or more blocks
+      auto i = gs.crbegin();
+      while (i->second.size() == 1) { ++i; }
+      if (i == gs.crend()) { i = gs.crbegin(); }
+      lambdamin = std::min(i->first, lambdamax);
+    } else if (lambdaminratio <= 1.0) {
       lambdamin = lambdamax * lambdaminratio;
     }
   }
 
-  if (maxnvar <= 0) { 
-    return;
+  if (maxnvar > 0) { 
+    // Find the first knot at which the maximum block size exceeds maxnvar
+    auto i = std::lower_bound(gs.cbegin(), gs.cend(), (uword) maxnvar, 
+      [](const GraphSeq::value_type& a, const uword& b) {
+        uword maxsize = 0;
+        for (const auto& j : a.second) { 
+          maxsize = std::max(maxsize, j.second.n_elem);
+        }
+        return maxsize < b;
+      }
+    );
+    if (i == gs.cend()) { --i; }
+    lambdamin = std::min(i->first, lambdamax);
   }
 
-  // Find the first knot at which the maximum block size exceeds maxnvar
-  auto i = std::lower_bound(gs.cbegin(), gs.cend(), maxnvar, 
-    [](const GraphSeq::value_type& a, const int& b) {
-      uword maxsize = 0;
-      for (const auto& j : a.second) {
-        maxsize = std::max(maxsize, j.second.n_elem);
-      }
-      return maxsize < (uword) b;
-    }
-  );
-  if (i != gs.cbegin()) { --i; }
-  lambdamin = std::min(i->first, lambdamax);
 }
 
 //' Fantope Projection and Selection
