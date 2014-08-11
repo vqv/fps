@@ -70,5 +70,11 @@ plot.svps <- function(x, type = c('row', 'column'), ...) {
   p <- qplot(x = lambda, y = value, geom = 'line', color = variable, data = df)
   p <- p + xlab(expression(lambda)) + ylab("leverage")
 
+  if(type == 'row' && is.null(rownames(x$leverage.row))) {
+      p <- p + theme(legend.position = 'none')
+  } else if(type == 'column' && is.null(rownames(x$leverage.col))) {
+      p <- p + theme(legend.position = 'none')
+  }
+
   return(p)
 }
