@@ -38,7 +38,7 @@ struct EntrywiseSoftThreshold
 {
   EntrywiseSoftThreshold(const double& lambda) : lambda(lambda) {}
   template <typename T>
-  void operator()(T& x, const double& z) const {
+  inline void operator()(T& x, const double& z) const {
     x.transform( SoftThresholdOp(z * lambda) );
   }
 private:
@@ -48,7 +48,7 @@ private:
 struct ColumnSoftThreshold
 {
   ColumnSoftThreshold(const double& lambda) : lambda(lambda) {}
-  void operator()(arma::mat& x, const double& z) const {
+  inline void operator()(arma::mat& x, const double& z) const {
     double c = z * lambda;
     for(arma::uword j = 0; j < x.n_cols; j++) {
       double y = norm(x.col(j));

@@ -7,10 +7,9 @@
 #include "simplex.h"
 #include <algorithm>
 
-using namespace arma;
 using namespace std;
 
-double simplex_sum(const vec& x, const double& theta) {
+inline double simplex_sum(const arma::vec& x, const double& theta) {
 
   double y = 0.0;
 
@@ -33,9 +32,9 @@ double simplex_sum(const vec& x, const double& theta) {
  * @param  interior     Include interior of simplex (default false)
  * @return              Number of nonzeros in the projection
  */
-uword simplex(vec& x, double d, bool interior) {
+arma::uword simplex(arma::vec& x, double d, bool interior) {
 
-  uword rank = 0;
+  arma::uword rank = 0;
 
   // Interior of L1 and LInfinity balls
   if(interior && simplex_sum(x, 0.0) <= d) {
@@ -105,7 +104,7 @@ uword simplex(vec& x, double d, bool interior) {
 /// Block versions
 ///////////////////////////////////////////////////////////////////////////////
 
-double simplex_sum(const BlockVec& x, const double& theta) {
+inline double simplex_sum(const block::vec& x, const double& theta) {
 
   double y = 0.0;
   for (auto& xi : x) {
@@ -122,9 +121,9 @@ double simplex_sum(const BlockVec& x, const double& theta) {
   return y;
 }
 
-uvec simplex(BlockVec& x, double d, bool interior) {
+arma::uvec simplex(block::vec& x, double d, bool interior) {
 
-  uvec rank(x.size(), fill::zeros);
+  arma::uvec rank(x.size(), arma::fill::zeros);
   auto ri = rank.begin();
 
   // Interior of L1 and LInfinity balls

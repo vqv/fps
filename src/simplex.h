@@ -8,9 +8,9 @@
 #define __SIMPLEX_H
 
 #include <RcppArmadillo.h>
-#include "block/mat.h"
+#include "block/block"
 
 arma::uword simplex(arma::vec& x, double d, bool interior = false);
-arma::uvec simplex(BlockVec& x, double d, bool interior = false);
+arma::uvec simplex(block::vec& x, double d, bool interior = false);
 
 #endif

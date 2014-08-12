@@ -4,20 +4,50 @@
 // Copyright 2014 Vincent Q. Vu. All rights reserved
 //
 
-#ifndef __BLOCKMAT_H
-#define __BLOCKMAT_H
+#include <vector>
 
-#include <RcppArmadillo.h>
-#include <list>
-#include <map>
-#include "base.h"
-
-typedef BlockBase<arma::vec> BlockVec;
-
-class BlockMat : public BlockBase<arma::mat> {
+template <typename bT, typename Container = std::vector<bT> >
+class BlockMat : public BlockBase< BlockMat<bT, Container> > {
 public:
-  BlockMat& operator*=(const double& rhs) {
+  typedef bT block_type;
+  typedef typename block_type::elem_type elem_type;
+  typedef typename Container::size_type size_type;
+  typedef typename Container::const_iterator const_iterator;
+  typedef typename Container::iterator iterator;
+  typedef typename Container::value_type value_type;
+  typedef typename Container::reference reference;
+  typedef typename Container::const_reference const_reference;
+
+  // Constructors
+  BlockMat() {}
+  explicit BlockMat(size_type count) : blocks(count) {}
+
+  // Container accessors
+  size_type size() const { return blocks.size(); }
+
+  const_iterator cbegin() const { return blocks.cbegin(); }
+  const_iterator cend() const { return blocks.cend(); }
+  const_iterator begin() const { return blocks.begin(); }
+  const_iterator end() const { return blocks.end(); }
+  iterator begin() { return blocks.begin(); }
+  iterator end() { return blocks.end(); }
+
+  reference back() { return blocks.back(); }
+  const_reference back() const { return blocks.back(); }
+
+  void clear() { return blocks.clear(); }
+  void push_back(const block_type& value) { blocks.push_back(value); }
+  void push_back(block_type&& value) { blocks.push_back(value); }
+  void resize(size_type count) { blocks.resize(count); }
+
+  // Operators
+  inline const BlockMat& operator*=(const double& rhs) {
     for (auto& x : blocks) { x *= rhs; }
+    return *this;
+  }
+
+  inline const BlockMat& operator/=(const double& rhs) {
+    for (auto& x : blocks) { x /= rhs; }
     return *this;
   }
 
@@ -27,71 +57,46 @@ public:
     return *this;
   }
 
-  BlockMat() : BlockBase<arma::mat>() {}
-  explicit BlockMat(size_type count) : BlockBase<arma::mat>(count) {}
-
-  friend double dot(const BlockMat& a, const BlockMat& b);
-  friend double dotsquare(const BlockMat& a, const BlockMat& b);
-  friend double tdotsquare(const BlockMat& a, const BlockMat& b);
-  friend double dist(const BlockMat& a, const BlockMat& b);
-
-  friend double sumabs(const BlockMat&);
-  friend void svd(BlockMat& u, BlockVec& s, BlockMat& v, const BlockMat& x);
-  friend void eig_sym(BlockVec& eigval, BlockMat& eigvec, const BlockMat& x);
-};
-
-template <typename Key>
-class BlockMap : public BlockMat {
-
-public:
-  typedef std::pair<arma::uvec, arma::uvec> index_t;
-  typedef typename std::map<Key, index_t> indexmap_t;
-
-  BlockMap(const arma::mat& X, const indexmap_t& indexmap) {
-    for (const auto& i : indexmap) {
-      index_t index = i.second;
-      if(index.first.n_elem == 0 || index.second.n_elem == 0) { continue; }
-
-      arma::mat b = X.submat(index.first, index.second);
-      blocks.push_back(std::move(b));
-      indices.push_back(std::move(index));
+  // Expression operators
+  template <typename Derived>
+  inline const BlockMat& operator=(const BlockBase<Derived>& rhs) {
+    blocks.resize(rhs.size());
+    auto i = rhs.cbegin();
+    for (auto& b : blocks) { 
+      b = *i;
+      ++i;
     }
+    return *this;
   }
 
-  void copy_to(arma::mat& X) const {
-    auto b = blocks.cbegin();
-    for (auto& i : indices) { X.submat(i.first, i.second) = *b++; }
+  template <typename Derived>
+  inline const BlockMat& operator+=(const BlockBase<Derived>& rhs) {
+    auto i = rhs.cbegin();
+    for (auto& b : blocks) { 
+      b += *i;
+      ++i;
+    }
+    return *this;
+  }
+
+  template <typename Derived>
+  inline const BlockMat& operator-=(const BlockBase<Derived>& rhs) {
+    auto i = rhs.cbegin();
+    for (auto& b : blocks) { 
+      b -= *i;
+      ++i;
+    }
+    return *this;
   }
 
 protected:
-  std::deque<index_t> indices;
+  Container blocks;
 };
 
-template <typename Key>
-class SymBlockMap : public BlockMat {
-
-public:
-  typedef arma::uvec index_t;
-  typedef typename std::map<Key, index_t> indexmap_t;
-
-  SymBlockMap(const arma::mat& X, const indexmap_t& indexmap) {
-    for (const auto& i : indexmap) {
-      index_t index = i.second;
-      if(index.n_elem == 0) { continue; }
-
-      arma::mat b = X.submat(index, index);
-      blocks.push_back(std::move(b));
-      indices.push_back(std::move(index));
-    }
-  }
-
-  void copy_to(arma::mat& X) const {
-    auto b = blocks.cbegin();
-    for (auto& i : indices) { X.submat(i, i) = *b++; }
-  }
-
-protected:
-  std::deque<index_t> indices;
+template <typename bT, typename Container >
+struct BlockBase_traits< BlockMat<bT, Container> > { 
+  typedef bT block_type; 
+  typedef typename block_type::elem_type elem_type;
+  typedef typename Container::size_type size_type;
+  typedef typename Container::const_iterator const_iterator;
 };
-
-#endif

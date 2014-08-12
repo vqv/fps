@@ -7,34 +7,32 @@
 #include "projection.h"
 #include "simplex.h"
 
-using namespace arma;
+void FantopeProjection::operator()(arma::mat& x) const {
 
-void FantopeProjection::operator()(mat& x) const {
+  arma::uword rank;
+  arma::vec eigval;
+  arma::mat eigvec;
 
-  uword rank;
-  vec eigval;
-  mat eigvec;
-
-  eig_sym(eigval, eigvec, x);
+  arma::eig_sym(eigval, eigvec, x);
   rank = simplex(eigval, d);
 
   // Reconstruct
   x = (
     eigvec.cols(eigvec.n_cols - rank, eigvec.n_cols - 1) *
-    diagmat(eigval.subvec(eigval.n_elem - rank, eigval.n_elem - 1)) *
+    arma::diagmat(eigval.subvec(eigval.n_elem - rank, eigval.n_elem - 1)) *
     eigvec.cols(eigvec.n_cols - rank, eigvec.n_cols - 1).t()
   );
 
   return;
 }
 
-void FantopeProjection::operator()(BlockMat& x) const {  
+void FantopeProjection::operator()(block::mat& x) const {  
 
-  uvec rank;
-  BlockVec eigval;
-  BlockMat eigvec;
+  arma::uvec rank;
+  block::vec eigval;
+  block::mat eigvec;
 
-  eig_sym(eigval, eigvec, x);
+  block::eig_sym(eigval, eigvec, x);
   rank = simplex(eigval, d);
 
   // Reconstruct
@@ -47,7 +45,7 @@ void FantopeProjection::operator()(BlockMat& x) const {
     } else {
       xi = (
         vi->cols(vi->n_cols - *ri, vi->n_cols - 1) * 
-        diagmat(di->subvec(di->n_elem - *ri, di->n_elem - 1)) *
+        arma::diagmat(di->subvec(di->n_elem - *ri, di->n_elem - 1)) *
         vi->cols(vi->n_cols - *ri, vi->n_cols - 1).t()
       );
     }
@@ -57,11 +55,11 @@ void FantopeProjection::operator()(BlockMat& x) const {
   return;
 }
 
-void SingularValueProjection::operator()(mat& x) const {  
+void SingularValueProjection::operator()(arma::mat& x) const {  
 
-  uword rank;
-  vec s;
-  mat u, v;
+  arma::uword rank;
+  arma::vec s;
+  arma::mat u, v;
 
   svd(u, s, v, x);
   rank = simplex(s, d, true);
@@ -72,7 +70,7 @@ void SingularValueProjection::operator()(mat& x) const {
   } else {
     x = (
       u.cols(0, rank - 1) * 
-      diagmat(s.subvec(0, rank - 1)) *
+      arma::diagmat(s.subvec(0, rank - 1)) *
       v.cols(0, rank - 1).t()
     );
   }
@@ -80,11 +78,11 @@ void SingularValueProjection::operator()(mat& x) const {
   return;
 }
 
-void SingularValueProjection::operator()(BlockMat& x) const {  
+void SingularValueProjection::operator()(block::mat& x) const {  
 
-  uvec rank;
-  BlockVec s;
-  BlockMat u, v;
+  arma::uvec rank;
+  block::vec s;
+  block::mat u, v;
 
   svd(u, s, v, x);
   rank = simplex(s, d, true);
@@ -98,13 +96,9 @@ void SingularValueProjection::operator()(BlockMat& x) const {
     if(*ri < 1) {
       xi.zeros();
     } else {
-      // ui->shed_cols(*ri, ui->n_cols);
-      // si->shed_rows(*ri, si->n_elem);
-      // vi->shed_cols(*ri, ui->n_cols);
-      // xi = ui * diagmat(si) * vi.t();
       xi = (
         ui->cols(0, *ri - 1) * 
-        diagmat(si->subvec(0, *ri - 1)) *
+        arma::diagmat(si->subvec(0, *ri - 1)) *
         vi->cols(0, *ri - 1).t()
       );
     }

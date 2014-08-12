@@ -12,14 +12,14 @@
 #include <cmath>
 
 #include "admm.h"
+#include "block/block"
+#include "graphsequence.h"
 #include "projection.h"
 #include "softthreshold.h"
-#include "graphsequence.h"
-#include "utility.h"
+#include "distance.h"
 
 using namespace Rcpp;
 using namespace arma;
-
 
 // Computes minimum and maximum values for lambda based on theory 
 // and heuristic.  The maximum value of lambda is equal to the 
@@ -161,7 +161,7 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     double lambdamax;
     compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio, 
                         maxnvar, ndim);
-    loglinearseq(_lambda, lambdamin, lambdamax, nsol);
+    _lambda = arma::linspace(lambdamax, lambdamin, nsol);
   }
 
   // Placeholders for solutions
@@ -196,9 +196,8 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     // ADMM
     niter[i] = admm(FantopeProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    _S, _z, _u, 
-                    admm_penalty, admm_adjust,
-                    maxiter, tolerance_abs);
+                    FrobeniusDistance(), 
+                    _S, _z, _u, admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Store solution
     NumericMatrix p(_S.n_rows, _S.n_cols);
@@ -214,30 +213,32 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     // Find active vertex partition and construct block matrix
     const GraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
-    SymBlockMap<GraphSeq::vertex_t> block_S(_S, active), 
-                                    block_z(_z, active), 
-                                    block_u(_u, active);
+    block::symmap<GraphSeq::vertex_t> b_S(_S, active), 
+                                      b_z(_z, active), 
+                                      b_u(_u, active);
 
     // ADMM
     niter[i] = admm(FantopeProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    block_S, block_z, block_u, 
-                    admm_penalty, admm_adjust,
-                    maxiter, tolerance_abs);
+                    FrobeniusDistance(), 
+                    static_cast<block::mat&>(b_S), 
+                    static_cast<block::mat&>(b_z), 
+                    static_cast<block::mat&>(b_u), 
+                    admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Restore dense matrices
-    block_z.copy_to(_z);
-    block_u.copy_to(_u);
+    b_z.copy_to(_z);
+    b_u.copy_to(_u);
 
     // Store solution
     NumericMatrix p(_S.n_rows, _S.n_cols);
     p.attr("dimnames") = S.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    block_z.copy_to(_p);
+    b_z.copy_to(_p);
     projection(i) = p;
 
-    L1(i) = sumabs(block_z);
-    varexplained(i) = dot(block_S, block_z);
+    L1(i) = block::sumabs(b_z);
+    varexplained(i) = block::dot(b_S, b_z);
     _leverage.col(i) = _p.diag();
 #endif
 

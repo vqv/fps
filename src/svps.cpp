@@ -12,10 +12,11 @@
 #include <cmath>
 
 #include "admm.h"
+#include "block/block"
+#include "graphsequence.h"
 #include "projection.h"
 #include "softthreshold.h"
-#include "graphsequence.h"
-#include "utility.h"
+#include "distance.h"
 
 using namespace Rcpp;
 using namespace arma;
@@ -149,7 +150,7 @@ List svps(NumericMatrix x, double ndim,
   } else {
     double lambdamax;
     compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio, maxnvar);
-    loglinearseq(_lambda, lambdamin, lambdamax, nsol);
+    _lambda = arma::linspace(lambdamax, lambdamin, nsol);
   }
 
   // Placeholders for solutions
@@ -189,9 +190,8 @@ List svps(NumericMatrix x, double ndim,
     // ADMM
     niter[i] = admm(SingularValueProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    _x, _z, _u, 
-                    admm_penalty, admm_adjust,
-                    maxiter, tolerance_abs);
+                    FrobeniusDistance(), 
+                    _x, _z, _u, admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Store solution
     NumericMatrix p(_x.n_rows, _x.n_cols);
@@ -209,31 +209,33 @@ List svps(NumericMatrix x, double ndim,
     // Find active vertex partition and construct block matrix
     const BiGraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
-    BlockMap<BiGraphSeq::vertex_t> block_x(_x, active), 
-                                   block_z(_z, active), 
-                                   block_u(_u, active);
+    block::map<BiGraphSeq::vertex_t> b_x(_x, active), 
+                                     b_z(_z, active), 
+                                     b_u(_u, active);
 
     // ADMM
     niter[i] = admm(SingularValueProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
-                    block_x, block_z, block_u, 
-                    admm_penalty, admm_adjust,
-                    maxiter, tolerance_abs);
+                    FrobeniusDistance(), 
+                    static_cast<block::mat&>(b_x), 
+                    static_cast<block::mat&>(b_z), 
+                    static_cast<block::mat&>(b_u), 
+                    admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Restore dense matrices
-    block_z.copy_to(_z);
-    block_u.copy_to(_u);
+    b_z.copy_to(_z);
+    b_u.copy_to(_u);
 
     // Store solution
     NumericMatrix p(_x.n_rows, _x.n_cols);
     p.attr("dimnames") = x.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    block_z.copy_to(_p);
+    b_z.copy_to(_p);
     projection(i) = p;
 
-    L1(i) = sumabs(block_z);
-    var_row(i) = dotsquare(block_x, block_z); // trace(xx' pp')
-    var_col(i) = tdotsquare(block_x, block_z); // trace(x'x p'p)
+    L1(i) = block::sumabs(b_z);
+    var_row(i) = block::dotsquare(b_x, b_z); // trace(xx' pp')
+    var_col(i) = block::tdotsquare(b_x, b_z); // trace(x'x p'p)
     _leverage_row.col(i) = vectorise(sum(square(_p), 1));
     _leverage_col.col(i) = vectorise(sum(square(_p), 0));
 #endif
