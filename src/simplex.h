@@ -77,6 +77,7 @@ void simplex(T1& x, T2& rank, double d, bool interior) {
   // Interior of L1 and LInfinity balls
   if(interior && simplex_sum(x, 0) <= d) {
     simplex_transform(x, rank, 0);
+    return;
   }
 
   // Let x(j) denote the jth largest x.
@@ -113,6 +114,7 @@ void simplex(T1& x, T2& rank, double d, bool interior) {
   theta = a + (b-a) * (d-fa) / (fb-fa);
 
   simplex_transform(x, rank, theta);
+  return;
 }
 
 #endif
