@@ -14,7 +14,7 @@ void FantopeProjection::operator()(arma::mat& x) const {
   arma::mat eigvec;
 
   arma::eig_sym(eigval, eigvec, x);
-  rank = simplex(eigval, d);
+  simplex(eigval, rank, d, false);
 
   // Reconstruct
   x = (
@@ -33,7 +33,7 @@ void FantopeProjection::operator()(block::mat& x) const {
   block::mat eigvec;
 
   block::eig_sym(eigval, eigvec, x);
-  rank = simplex(eigval, d);
+  simplex(eigval, rank, d, false);
 
   // Reconstruct
   auto ri = rank.begin();
@@ -62,7 +62,7 @@ void SingularValueProjection::operator()(arma::mat& x) const {
   arma::mat u, v;
 
   svd(u, s, v, x);
-  rank = simplex(s, d, true);
+  simplex(s, rank, d, true);
 
   // Reconstruct
   if (rank < 1) {
@@ -85,7 +85,7 @@ void SingularValueProjection::operator()(block::mat& x) const {
   block::mat u, v;
 
   svd(u, s, v, x);
-  rank = simplex(s, d, true);
+  simplex(s, rank, d, true);
 
   // Reconstruct
   auto ri = rank.begin();
