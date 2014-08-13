@@ -53,7 +53,7 @@ inline double simplex_sum(const block::vec& x, const double theta) {
 }
 
 inline void simplex_transform(block::vec& x, arma::uvec& rank, const double theta) {
-  rank.zeros(x.size());
+  rank.zeros((arma::uword) x.size());
   auto ri = rank.begin();
   for (auto& xi : x) { simplex_transform(xi, *ri, theta); ++ri; }
 }

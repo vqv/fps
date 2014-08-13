@@ -146,7 +146,6 @@ List svps(NumericMatrix x, double ndim,
   if (lambda.size() > 0) {
     _lambda = arma::sort(vec(lambda.begin(), lambda.size()), "descend");
     nsol = _lambda.n_elem;
-    lambdamin = _lambda(nsol - 1);
   } else {
     double lambdamax;
     compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio, maxnvar);
