@@ -128,7 +128,7 @@ public:
   typedef typename GraphSeqBase_traits<GraphSeq>::vertex_t vertex_t;
   typedef typename GraphSeqBase_traits<GraphSeq>::block_t block_t;
 
-  GraphSeq(const arma::mat& x, double lambdamin = 0.0) {
+  GraphSeq(const arma::mat& x, double lambdamin, arma::uword maxblocksize) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -154,9 +154,11 @@ public:
       current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
     }
     last_weight = std::numeric_limits<double>::infinity();
+    current_max = 1;
 
     // Merge components until there is only one
-    while (!edges.empty() && sequence.crbegin()->second.size() > 1) {
+    while (!edges.empty() && current.size() > 1 &&
+           current_max < maxblocksize) {
       std::set<vertex_t> merged = merge(ds, edges);
       for (const auto& m : merged) {
         partition_t::iterator p = sequence.rbegin()->second.find(m);
@@ -166,11 +168,17 @@ public:
     }
 
     // Store the final partition
-    sequence.emplace_hint(sequence.cend(), lambdamin, current);
+    if (edges.empty() || current.size() == 1) {
+      sequence.emplace_hint(sequence.cend(), lambdamin, current);
+    } else {
+      sequence.emplace_hint(sequence.cend(), 
+                            std::nexttoward(last_weight, 0.0), current);
+    }
   }
 
 protected:
   partition_t current;
+  arma::uword current_max;
   double last_weight;
 
   void merge_blocks(const double& weight, 
@@ -188,6 +196,8 @@ protected:
     pa = current.find(a), 
     pb = current.find(b);
     block_t newblock = arma::join_vert(pa->second, pb->second);
+
+    if (newblock.n_elem > current_max) { current_max = newblock.n_elem; }
 
     current.erase(pa);
     current.erase(pb);
@@ -210,7 +220,7 @@ public:
   typedef typename GraphSeqBase_traits<BiGraphSeq>::vertex_t vertex_t;
   typedef typename GraphSeqBase_traits<BiGraphSeq>::block_t block_t;
 
-  BiGraphSeq(const arma::mat& x, double lambdamin = 0.0) {
+  BiGraphSeq(const arma::mat& x, double lambdamin, arma::uword maxblocksize) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -254,9 +264,11 @@ public:
       current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
     }
     last_weight = std::numeric_limits<double>::infinity();
+    current_max = 1;
 
     // Merge components until there is only one
-    while (!edges.empty() && sequence.crbegin()->second.size() > 1) {
+    while (!edges.empty() && current.size() > 1 &&
+           current_max < maxblocksize) {
       std::set<vertex_t> merged = merge(ds, edges);
       for (const auto& m : merged) {
         partition_t::iterator p = sequence.rbegin()->second.find(m);
@@ -267,14 +279,19 @@ public:
     }
 
     // Store the final partition
-    sequence.emplace_hint(sequence.cend(), lambdamin, current);
+    if (edges.empty() || current.size() == 1) {
+      sequence.emplace_hint(sequence.cend(), lambdamin, current);
+    } else {
+      sequence.emplace_hint(sequence.cend(), 
+                            std::nexttoward(last_weight, 0.0), current);
+    }
   }
 
 protected:
 
-
   partition_t current;
   double last_weight;
+  arma::uword current_max;
 
   void merge_blocks(const double& weight, 
                     const vertex_t& a, const vertex_t& b, 
@@ -293,6 +310,9 @@ protected:
     pb = current.find(b);
     newblock.first = arma::join_vert(pa->second.first, pb->second.first);
     newblock.second = arma::join_vert(pa->second.second, pb->second.second);
+
+    arma::uword newblocksize = newblock.first.n_elem + newblock.second.n_elem;
+    if (newblocksize > current_max) { current_max = newblocksize; }
 
     current.erase(pa);
     current.erase(pb);

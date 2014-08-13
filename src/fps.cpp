@@ -27,8 +27,7 @@ using namespace arma;
 // equal to an order statistic of maxoffdiag.
 void compute_lambdarange(const GraphSeq& gs, 
                          double& lambdamin, double& lambdamax, 
-                         const double lambdaminratio, 
-                         const int maxnvar, const double ndim) {
+                         const double lambdaminratio) {
 
   lambdamax = gs.cbegin()->first;
 
@@ -43,22 +42,6 @@ void compute_lambdarange(const GraphSeq& gs,
       lambdamin = lambdamax * lambdaminratio;
     }
   }
-
-  if (maxnvar > 0) { 
-    // Find the first knot at which the maximum block size exceeds maxnvar
-    auto i = std::lower_bound(gs.cbegin(), gs.cend(), (uword) maxnvar, 
-      [](const GraphSeq::value_type& a, const uword& b) {
-        uword maxsize = 0;
-        for (const auto& j : a.second) { 
-          maxsize = std::max(maxsize, j.second.n_elem);
-        }
-        return maxsize < b;
-      }
-    );
-    if (i == gs.cend()) { --i; }
-    lambdamin = std::min(i->first, lambdamax);
-  }
-
 }
 
 //' Fantope Projection and Selection
@@ -149,7 +132,8 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
   const mat _S(S.begin(), S.nrow(), S.ncol(), false);
 
   // Compute the sequence of solution graphs
-  GraphSeq gs(_S, std::max(0.0, lambdamin));
+  GraphSeq gs(_S, std::max(0.0, lambdamin), 
+              maxnvar > 0 ? (uword) maxnvar : _S.n_cols);
 
   // Generate lambda sequence if necessary
   vec _lambda;
@@ -158,8 +142,7 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     nsol = _lambda.n_elem;
   } else {
     double lambdamax;
-    compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio, 
-                        maxnvar, ndim);
+    compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio);
     _lambda = arma::linspace(lambdamax, lambdamin, nsol);
   }
 

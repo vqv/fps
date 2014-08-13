@@ -25,7 +25,7 @@ using namespace arma;
 // and heuristic.
 void compute_lambdarange(const BiGraphSeq& gs, 
                          double& lambdamin, double& lambdamax, 
-                         const double lambdaminratio, const int maxnvar) {
+                         const double lambdaminratio) {
 
   lambdamax = gs.cbegin()->first;
 
@@ -40,24 +40,6 @@ void compute_lambdarange(const BiGraphSeq& gs,
       lambdamin = lambdamax * lambdaminratio;
     }
   }
-
-  if (maxnvar > 0) { 
-    // Find the first knot at which the maximum block size (nrow + ncol)
-    // exceeds 2 * maxnvar
-    auto i = std::lower_bound(gs.cbegin(), gs.cend(), 2 * (uword) maxnvar, 
-      [](const BiGraphSeq::value_type& a, const uword& b) {
-        uword maxsize = 0;
-        for (const auto& j : a.second) {
-          maxsize = std::max(maxsize, j.second.first.n_elem + 
-                                      j.second.second.n_elem);
-        }
-        return maxsize < b;
-      }
-    );
-    if (i == gs.cend()) { --i; }
-    lambdamin = std::min(i->first, lambdamax);
-  }
-
 }
 
 //' Singular Value Projection and Selection
@@ -139,7 +121,8 @@ List svps(NumericMatrix x, double ndim,
   const mat _x(x.begin(), x.nrow(), x.ncol(), false);
 
   // Compute the sequence of solution graphs
-  BiGraphSeq gs(_x, std::max(0.0, lambdamin));
+  BiGraphSeq gs(_x, std::max(0.0, lambdamin), 
+                maxnvar > 0 ? (uword) 2*maxnvar : _x.n_rows + _x.n_cols);
 
   // Generate lambda sequence if necessary
   vec _lambda;
@@ -148,7 +131,7 @@ List svps(NumericMatrix x, double ndim,
     nsol = _lambda.n_elem;
   } else {
     double lambdamax;
-    compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio, maxnvar);
+    compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio);
     _lambda = arma::linspace(lambdamax, lambdamin, nsol);
   }
 
