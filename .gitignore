@@ -7,3 +7,4 @@ src/*.dll
 .Rproj.user
 *.sublime*
 dev/*
+*.xcodeproj
