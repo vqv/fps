@@ -210,13 +210,15 @@ struct BiGraphSeq;
 template <>
 struct GraphSeqBase_traits<BiGraphSeq> {
 public:
-  typedef std::pair<arma::uword, arma::uword> vertex_t;
+  enum class margin_t { column, row };
+  typedef std::pair<margin_t, arma::uword> vertex_t;
   typedef std::pair<arma::uvec, arma::uvec> block_t;
 };
 
 struct BiGraphSeq : GraphSeqBase<BiGraphSeq> {
 public:
   friend struct GraphSeqBase<BiGraphSeq>;
+  typedef typename GraphSeqBase_traits<BiGraphSeq>::margin_t margin_t;
   typedef typename GraphSeqBase_traits<BiGraphSeq>::vertex_t vertex_t;
   typedef typename GraphSeqBase_traits<BiGraphSeq>::block_t block_t;
 
@@ -230,7 +232,8 @@ public:
         double weight = std::fabs(x(i,j));
         if (weight > lambdamin) {
           edges.emplace(weight, 
-            std::make_pair(std::make_pair(0, i), std::make_pair(1, j))
+                        std::make_pair(std::make_pair(margin_t::row, i),
+                                       std::make_pair(margin_t::column, j))
           );
         }
       }
@@ -249,7 +252,7 @@ public:
 
     // Initialize singleton partition
     for (arma::uword i = 0; i < x.n_rows; ++i) {
-      vertex_t v = std::make_pair(0, i);
+      vertex_t v = std::make_pair(margin_t::row, i);
       block_t b;
       b.first.set_size(1);
       b.first[0] = i;
@@ -257,7 +260,7 @@ public:
       current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
     }
     for (arma::uword j = 0; j < x.n_cols; ++j) {
-      vertex_t v = std::make_pair(1, j);
+      vertex_t v = std::make_pair(margin_t::column, j);
       block_t b;
       b.second.set_size(1);
       b.second[0] = j;
