@@ -47,7 +47,13 @@ inline std::set<double> simplex_knots(const arma::vec& x) {
 inline double simplex_sum(const block::vec& x, const double theta) {
 
   double y = 0.0;
-  for (auto& xi : x) { y += simplex_sum(xi, theta); }
+  for (auto& xi : x) { 
+    for (auto z : xi) {
+      z -= theta;
+      if (z > 1.0) { y += 1.0; }
+      else if (z > 0.0) { y += z; }
+    }
+  }
 
   return y;
 }
