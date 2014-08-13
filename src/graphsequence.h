@@ -12,7 +12,6 @@
 #include <map>
 #include <utility>
 #include <boost/pending/disjoint_sets.hpp>
-#include <sstream>
 
 template <typename Derived>
 struct GraphSeqBase_traits;
@@ -128,7 +127,8 @@ public:
   typedef typename GraphSeqBase_traits<GraphSeq>::vertex_t vertex_t;
   typedef typename GraphSeqBase_traits<GraphSeq>::block_t block_t;
 
-  GraphSeq(const arma::mat& x, double lambdamin, arma::uword maxblocksize) {
+  GraphSeq(const arma::mat& x, double lambdamin, 
+           arma::uword maxblocksize, arma::uword minblocknum = 1) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -157,7 +157,7 @@ public:
     current_max = 1;
 
     // Merge components until there is only one
-    while (!edges.empty() && current.size() > 1 &&
+    while (!edges.empty() && current.size() > minblocknum && 
            current_max < maxblocksize) {
       std::set<vertex_t> merged = merge(ds, edges);
       for (const auto& m : merged) {
@@ -220,7 +220,8 @@ public:
   typedef typename GraphSeqBase_traits<BiGraphSeq>::vertex_t vertex_t;
   typedef typename GraphSeqBase_traits<BiGraphSeq>::block_t block_t;
 
-  BiGraphSeq(const arma::mat& x, double lambdamin, arma::uword maxblocksize) {
+  BiGraphSeq(const arma::mat& x, double lambdamin, 
+             arma::uword maxblocksize, arma::uword minblocknum = 1) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -267,7 +268,7 @@ public:
     current_max = 1;
 
     // Merge components until there is only one
-    while (!edges.empty() && current.size() > 1 &&
+    while (!edges.empty() && current.size() > minblocknum &&
            current_max < maxblocksize) {
       std::set<vertex_t> merged = merge(ds, edges);
       for (const auto& m : merged) {
