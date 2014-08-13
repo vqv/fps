@@ -132,8 +132,8 @@ public:
 
     // Construct edges
     std::priority_queue<edge_t> edges;
-    for (arma::uword i = 0; i < x.n_rows; ++i) {
-      for (arma::uword j = i + 1; j < x.n_cols; ++j) {
+    for (arma::uword j = 0; j < x.n_cols; ++j) {
+      for (arma::uword i = j + 1; i < x.n_rows; ++i) {
         double weight = std::fabs(x(i,j));
         if (weight > lambdamin) {
           edges.emplace(weight, std::make_pair(i, j));
@@ -158,7 +158,7 @@ public:
     // Merge components until there is only one
     while (!edges.empty() && sequence.crbegin()->second.size() > 1) {
       std::set<vertex_t> merged = merge(ds, edges);
-      for(const auto& m : merged) {
+      for (const auto& m : merged) {
         partition_t::iterator p = sequence.rbegin()->second.find(m);
         if(p == sequence.rbegin()->second.end()) { continue; }
         p->second = arma::sort(p->second);
@@ -214,8 +214,8 @@ public:
 
     // Construct edges
     std::priority_queue<edge_t> edges;
-    for (arma::uword i = 0; i < x.n_rows; ++i) {
-      for (arma::uword j = 0 ; j < x.n_cols; ++j) {
+    for (arma::uword j = 0; j < x.n_cols; ++j) {
+      for (arma::uword i = 0 ; i < x.n_rows; ++i) {
         double weight = std::fabs(x(i,j));
         if (weight > lambdamin) {
           edges.emplace(weight, 
@@ -258,7 +258,7 @@ public:
     // Merge components until there is only one
     while (!edges.empty() && sequence.crbegin()->second.size() > 1) {
       std::set<vertex_t> merged = merge(ds, edges);
-      for(const auto& m : merged) {
+      for (const auto& m : merged) {
         partition_t::iterator p = sequence.rbegin()->second.find(m);
         if(p == sequence.rbegin()->second.end()) { continue; }
         p->second.first = arma::sort(p->second.first);
