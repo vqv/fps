@@ -7,14 +7,14 @@
 #ifndef __SOFTTHRESHOLD_H
 #define __SOFTTHRESHOLD_H
 
-#include <algorithm>
+#include <cmath>
 
 // Proximal operator for \lambda |x|_1
 struct SoftThresholdOp
 {
-  SoftThresholdOp(const double& z) : z(z) {}
-  inline const double operator() (const double& x) const {
-    return ((x > 0) - (x < 0)) * std::max(0.0, std::abs(x) - z);
+  SoftThresholdOp(const double z) : z(z) {}
+  inline double operator() (const double x) const {
+    return std::copysign(std::fdim(std::fabs(x), z), x);
   }
 
 private:
@@ -24,10 +24,10 @@ private:
 // Proximal operator for \lambda (\alpha |x|_1 + 0.5 (1-\alpha) |x|_2^2)
 struct ElasticSoftThresholdOp
 {
-  ElasticSoftThresholdOp(const double& z, const double& alpha) :
+  ElasticSoftThresholdOp(const double z, const double alpha) :
     z1(z * alpha), z2(1.0 / (1.0 + 0.5 * (1.0 - alpha) * z)) {}
-  inline const double operator() (const double& x) const {
-    return ((x > 0) - (x < 0)) * z2 * std::max(0.0, std::abs(x) - z1);
+  inline double operator() (const double x) const {
+    return std::copysign(z2 * std::fdim(std::fabs(x), z1), x);
   }
 
 private:
@@ -36,9 +36,9 @@ private:
 
 struct EntrywiseSoftThreshold
 {
-  EntrywiseSoftThreshold(const double& lambda) : lambda(lambda) {}
+  EntrywiseSoftThreshold(const double lambda) : lambda(lambda) {}
   template <typename T>
-  inline void operator()(T& x, const double& z) const {
+  inline void operator()(T& x, const double z) const {
     x.transform( SoftThresholdOp(z * lambda) );
   }
 private:
@@ -47,12 +47,13 @@ private:
 
 struct ColumnSoftThreshold
 {
-  ColumnSoftThreshold(const double& lambda) : lambda(lambda) {}
-  inline void operator()(arma::mat& x, const double& z) const {
+  ColumnSoftThreshold(const double lambda) : lambda(lambda) {}
+  inline void operator()(arma::mat& x, const double z) const {
     double c = z * lambda;
     for (arma::uword j = 0; j < x.n_cols; j++) {
       double y = norm(x.col(j));
-      x.col(j) = x.col(j) * std::max(0.0, 1.0 - c / y);
+      if (y <= c) { continue; }
+      else { x.col(j) = x.col(j) * (c / y); }
     }
   }
 
