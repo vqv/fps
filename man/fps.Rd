@@ -5,7 +5,7 @@
 \alias{fps-package}
 \title{Fantope Projection and Selection}
 \usage{
-fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1,
+fps(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
   lambdamin = -1, lambda = as.numeric(c()), maxiter = 100L,
   tolerance = 0.001, verbose = 0L)
 }
@@ -16,25 +16,24 @@ fps(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1,
 
 \item{nsol}{Number of solutions to compute}
 
-\item{maxnvar}{Suggested maximum number of variables to include
-(ignored if \code{maxnvar <= 0})}
+\item{maxblocksize}{Suggested maximum block size; ignored if \code{== 0}}
 
 \item{lambdaminratio}{Minimum value of lambda as a fraction of
 the automatically determined maximum value of
-lambda (ignored if \code{lambdaminratio < 0})}
+lambda; ignored if \code{< 0}}
 
-\item{lambdamin}{Minimum value of lambda (set automatically if
-\code{lambdamin < 0})}
+\item{lambdamin}{Minimum value of lambda; set automatically if
+\code{< 0}}
 
-\item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty}
+\item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 
 \item{tolerance}{Convergence threshold}
 
-\item{verbose}{Level of verbosity; Silent if \code{verbose = 0}, otherwise
-                      display more messages and progress indicators as \code{verbose}
-                      increases}
+\item{verbose}{Level of verbosity; silent if \code{= 0}; otherwise
+                      display more messages and progress indicators as
+                      \code{verbose} increases}
 }
 \value{
 An S3 object of class \code{fps} which is a list with the
@@ -66,7 +65,7 @@ is automatically chosen so that the minimally regularized solution
 is different from PCA.
 
 For large input matrices (1000-by-1000 or larger) it is recommended
-that the \code{maxnvar} argument be set to a reasonably small number.
+that the \code{maxblocksize} argument be set to a reasonably small number.
 }
 \examples{
 # Apply FPS to the standardized wine data from the UCI ML repository
@@ -80,7 +79,7 @@ j <- sample(1:ncol(wine), size = 500 - ncol(wine), replace = TRUE)
 noise <- apply(wine[, j], 2, sample, replace = TRUE)
 colnames(noise) <- rep('noise', ncol(noise))
 x <- cbind(wine, noise)
-out <- fps(cor(x), ndim = 2, maxnvar = 50, verbose = 1)
+out <- fps(cor(x), ndim = 2, maxblocksize = 50, verbose = 1)
 
 \dontrun{
 # Choose lambda by cross-validation (this may take a few minutes)

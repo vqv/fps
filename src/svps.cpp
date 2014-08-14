@@ -56,19 +56,19 @@ void compute_lambdarange(const BiGraphSeq& gs,
 //' @param x              Input matrix
 //' @param ndim           Target subspace dimension (can be fractional)
 //' @param nsol           Number of solutions to compute
-//' @param maxnvar        Suggested maximum number of rows/columns to include 
-//'                       (ignored if \code{maxnvar <= 0})
+//' @param maxblocksize   Suggested maximum block size (rows + columns);
+//'                       ignored if \code{== 0}
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
-//'                       lambda (ignored if \code{lambdaminratio < 0})
-//' @param lambdamin      Minimum value of lambda (set automatically if 
-//'                       \code{lambdamin < 0})
+//'                       lambda; ignored if \code{< 0};
+//' @param lambdamin      Minimum value of lambda; set automatically if 
+//'                       \code{< 0}
 //' @param lambda         Vector of regularization parameter values
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
-//' @param verbose        Level of verbosity (silent if \code{verbose = 0}; 
+//' @param verbose        Level of verbosity; silent if \code{= 0}; 
 //'                       otherwise display more messages and progress 
-//'                       indicators as \code{verbose} increases)
+//'                       indicators as \code{verbose} increases
 //'
 //' @details
 //'
@@ -103,7 +103,7 @@ void compute_lambdarange(const BiGraphSeq& gs,
 //'
 // [[Rcpp::export]]
 List svps(NumericMatrix x, double ndim,
-          unsigned int nsol = 50, int maxnvar = -1, 
+          unsigned int nsol = 50, unsigned int maxblocksize = 0, 
           double lambdaminratio = -1, double lambdamin = -1, 
           NumericVector lambda = NumericVector::create(), 
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
@@ -122,7 +122,8 @@ List svps(NumericMatrix x, double ndim,
 
   // Compute the sequence of solution graphs
   BiGraphSeq gs(_x, std::max(0.0, lambdamin), 
-                maxnvar > 0 ? (uword) 2*maxnvar : _x.n_rows + _x.n_cols);
+                maxblocksize > 0 ? (uword) maxblocksize 
+                                 : _x.n_rows + _x.n_cols);
 
   // Generate lambda sequence if necessary
   vec _lambda;

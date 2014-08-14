@@ -3,7 +3,7 @@
 \alias{svps}
 \title{Singular Value Projection and Selection}
 \usage{
-svps(x, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1,
+svps(x, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
   lambdamin = -1, lambda = as.numeric(c()), maxiter = 100L,
   tolerance = 0.001, verbose = 0L)
 }
@@ -14,15 +14,15 @@ svps(x, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1,
 
 \item{nsol}{Number of solutions to compute}
 
-\item{maxnvar}{Suggested maximum number of rows/columns to include
-(ignored if \code{maxnvar <= 0})}
+\item{maxblocksize}{Suggested maximum block size (rows + columns);
+ignored if \code{== 0}}
 
 \item{lambdaminratio}{Minimum value of lambda as a fraction of
 the automatically determined maximum value of
-lambda (ignored if \code{lambdaminratio < 0})}
+lambda; ignored if \code{< 0};}
 
-\item{lambdamin}{Minimum value of lambda (set automatically if
-\code{lambdamin < 0})}
+\item{lambdamin}{Minimum value of lambda; set automatically if
+\code{< 0}}
 
 \item{lambda}{Vector of regularization parameter values}
 
@@ -30,9 +30,9 @@ lambda (ignored if \code{lambdaminratio < 0})}
 
 \item{tolerance}{Convergence threshold}
 
-\item{verbose}{Level of verbosity (silent if \code{verbose = 0};
+\item{verbose}{Level of verbosity; silent if \code{= 0};
                       otherwise display more messages and progress
-                      indicators as \code{verbose} increases)}
+                      indicators as \code{verbose} increases}
 }
 \value{
 An S3 object of class \code{svps} which is a list with the

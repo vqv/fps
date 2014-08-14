@@ -58,19 +58,18 @@ void compute_lambdarange(const GraphSeq& gs,
 //' @param S              Input matrix (assumed to be symmetric)
 //' @param ndim           Target subspace dimension (can be fractional)
 //' @param nsol           Number of solutions to compute
-//' @param maxnvar        Suggested maximum number of variables to include 
-//'                       (ignored if \code{maxnvar <= 0})
+//' @param maxblocksize   Suggested maximum block size; ignored if \code{== 0}
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
-//'                       lambda (ignored if \code{lambdaminratio < 0})
-//' @param lambdamin      Minimum value of lambda (set automatically if 
-//'                       \code{lambdamin < 0})
-//' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty
+//'                       lambda; ignored if \code{< 0}
+//' @param lambdamin      Minimum value of lambda; set automatically if 
+//'                       \code{< 0}
+//' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
-//' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
-//'                       display more messages and progress indicators as \code{verbose} 
-//'                       increases
+//' @param verbose        Level of verbosity; silent if \code{= 0}; otherwise 
+//'                       display more messages and progress indicators as 
+//'                       \code{verbose} increases
 //'
 //' @return An S3 object of class \code{fps} which is a list with the 
 //'         following components:
@@ -89,7 +88,7 @@ void compute_lambdarange(const GraphSeq& gs,
 //'
 //' @details
 //' For large input matrices (1000-by-1000 or larger) it is recommended 
-//' that the \code{maxnvar} argument be set to a reasonably small number.
+//' that the \code{maxblocksize} argument be set to a reasonably small number.
 //'
 //' @export
 //'
@@ -105,7 +104,7 @@ void compute_lambdarange(const GraphSeq& gs,
 //' noise <- apply(wine[, j], 2, sample, replace = TRUE)
 //' colnames(noise) <- rep('noise', ncol(noise))
 //' x <- cbind(wine, noise)
-//' out <- fps(cor(x), ndim = 2, maxnvar = 50, verbose = 1)
+//' out <- fps(cor(x), ndim = 2, maxblocksize = 50, verbose = 1)
 //'
 //' \dontrun{
 //' # Choose lambda by cross-validation (this may take a few minutes)
@@ -117,7 +116,8 @@ void compute_lambdarange(const GraphSeq& gs,
 //'
 // [[Rcpp::export]]
 List fps(NumericMatrix S, double ndim, unsigned int nsol = 50, 
-         int maxnvar = -1, double lambdaminratio = -1, double lambdamin = -1, 
+         unsigned int maxblocksize = 0, 
+         double lambdaminratio = -1, double lambdamin = -1, 
          NumericVector lambda = NumericVector::create(), 
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
 
@@ -133,7 +133,7 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
 
   // Compute the sequence of solution graphs
   GraphSeq gs(_S, std::max(0.0, lambdamin), 
-              maxnvar > 0 ? (uword) maxnvar : _S.n_cols);
+              maxblocksize > 0 ? (uword) maxblocksize : _S.n_cols);
 
   // Generate lambda sequence if necessary
   vec _lambda;
@@ -179,7 +179,8 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     niter[i] = admm(FantopeProjection(ndim), 
                     EntrywiseSoftThreshold(_lambda[i]), 
                     FrobeniusDistance(), 
-                    _S, _z, _u, admm_penalty, admm_adjust, maxiter, tolerance_abs);
+                    _S, _z, _u, admm_penalty, admm_adjust, maxiter, 
+                    tolerance_abs);
 
     // Store solution
     NumericMatrix p(_S.n_rows, _S.n_cols);

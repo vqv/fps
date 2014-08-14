@@ -15,19 +15,18 @@
 #' @param S              Input matrix (assumed to be symmetric)
 #' @param ndim           Target subspace dimension (can be fractional)
 #' @param nsol           Number of solutions to compute
-#' @param maxnvar        Suggested maximum number of variables to include 
-#'                       (ignored if \code{maxnvar <= 0})
+#' @param maxblocksize   Suggested maximum block size; ignored if \code{== 0}
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
-#'                       lambda (ignored if \code{lambdaminratio < 0})
-#' @param lambdamin      Minimum value of lambda (set automatically if 
-#'                       \code{lambdamin < 0})
-#' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxnvar, and lambdamin if nonempty
+#'                       lambda; ignored if \code{< 0}
+#' @param lambdamin      Minimum value of lambda; set automatically if 
+#'                       \code{< 0}
+#' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold
-#' @param verbose        Level of verbosity; Silent if \code{verbose = 0}, otherwise 
-#'                       display more messages and progress indicators as \code{verbose} 
-#'                       increases
+#' @param verbose        Level of verbosity; silent if \code{= 0}; otherwise 
+#'                       display more messages and progress indicators as 
+#'                       \code{verbose} increases
 #'
 #' @return An S3 object of class \code{fps} which is a list with the 
 #'         following components:
@@ -46,7 +45,7 @@
 #'
 #' @details
 #' For large input matrices (1000-by-1000 or larger) it is recommended 
-#' that the \code{maxnvar} argument be set to a reasonably small number.
+#' that the \code{maxblocksize} argument be set to a reasonably small number.
 #'
 #' @export
 #'
@@ -62,7 +61,7 @@
 #' noise <- apply(wine[, j], 2, sample, replace = TRUE)
 #' colnames(noise) <- rep('noise', ncol(noise))
 #' x <- cbind(wine, noise)
-#' out <- fps(cor(x), ndim = 2, maxnvar = 50, verbose = 1)
+#' out <- fps(cor(x), ndim = 2, maxblocksize = 50, verbose = 1)
 #'
 #' \dontrun{
 #' # Choose lambda by cross-validation (this may take a few minutes)
@@ -72,8 +71,8 @@
 #' print(v)
 #' }
 #'
-fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxnvar, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
+fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxblocksize, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 
 #' Singular Value Projection and Selection
@@ -90,19 +89,19 @@ fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1, lambdam
 #' @param x              Input matrix
 #' @param ndim           Target subspace dimension (can be fractional)
 #' @param nsol           Number of solutions to compute
-#' @param maxnvar        Suggested maximum number of rows/columns to include 
-#'                       (ignored if \code{maxnvar <= 0})
+#' @param maxblocksize   Suggested maximum block size (rows + columns);
+#'                       ignored if \code{== 0}
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
-#'                       lambda (ignored if \code{lambdaminratio < 0})
-#' @param lambdamin      Minimum value of lambda (set automatically if 
-#'                       \code{lambdamin < 0})
+#'                       lambda; ignored if \code{< 0};
+#' @param lambdamin      Minimum value of lambda; set automatically if 
+#'                       \code{< 0}
 #' @param lambda         Vector of regularization parameter values
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold
-#' @param verbose        Level of verbosity (silent if \code{verbose = 0}; 
+#' @param verbose        Level of verbosity; silent if \code{= 0}; 
 #'                       otherwise display more messages and progress 
-#'                       indicators as \code{verbose} increases)
+#'                       indicators as \code{verbose} increases
 #'
 #' @details
 #'
@@ -135,7 +134,7 @@ fps <- function(S, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1, lambdam
 #' print(out)
 #' plot(out)
 #'
-svps <- function(x, ndim, nsol = 50L, maxnvar = -1L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_svps', PACKAGE = 'fps', x, ndim, nsol, maxnvar, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
+svps <- function(x, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_svps', PACKAGE = 'fps', x, ndim, nsol, maxblocksize, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 
