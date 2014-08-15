@@ -166,7 +166,7 @@ List svps(NumericMatrix x, double ndim,
          admm_adjust = 2.0;
 
   // Outer loop to compute solution path
-  for (int i = 0; i < nsol; ++i) {
+  for (unsigned int i = 0; i < nsol; ++i) {
     if (verbose > 0) { Rcout << "."; }
 
 #ifdef FPS_DONT_USE_GRAPH_OPTIMIZATION
