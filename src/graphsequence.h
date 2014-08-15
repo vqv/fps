@@ -65,11 +65,10 @@ protected:
   // Note that these blocks could possibly merge into more than 
   // one new block.
   template <typename DisjointSets>
-  std::set<vertex_t> merge(DisjointSets& ds, queue_t& edges) {
+  void merge(DisjointSets& ds, queue_t& edges) {
 
     vertex_t a, b, key;
     double weight;
-    std::set<vertex_t> merged;
 
     // Pop edges until we find an edge between two components
     while (!edges.empty()) {
@@ -86,9 +85,6 @@ protected:
       ds.link(a, b);
       key = ds.find_set(edges.top().second.first);
       static_cast<Derived*>(this)->merge_blocks(weight, a, b, key);
-      merged.insert(a);
-      merged.insert(b);
-      merged.insert(key);
       edges.pop();
 
       // Add all edges with the same weight in case of ties
@@ -99,17 +95,13 @@ protected:
           ds.link(a, b);
           key = ds.find_set(edges.top().second.first);
           static_cast<Derived*>(this)->merge_blocks(weight, a, b, key);
-          merged.insert(a);
-          merged.insert(b);
-          merged.insert(key);
         }
         edges.pop();
       }
       break;
     }
-
-    return merged;
   }
+
 };
 
 struct GraphSeq;
@@ -159,35 +151,42 @@ public:
     // Merge components until there is only one
     while (!edges.empty() && current.size() > minblocknum && 
            current_max < maxblocksize) {
-      std::set<vertex_t> merged = merge(ds, edges);
-      for (const auto& m : merged) {
-        partition_t::iterator p = sequence.rbegin()->second.find(m);
-        if(p == sequence.rbegin()->second.end()) { continue; }
-        p->second = arma::sort(p->second);
-      }
+      merge(ds, edges);
     }
 
     // Store the final partition
     if (edges.empty() || current.size() == 1) {
-      sequence.emplace_hint(sequence.cend(), lambdamin, current);
+      flush_blocks(lambdamin);
     } else {
-      sequence.emplace_hint(sequence.cend(), 
-                            std::nexttoward(last_weight, 0.0), current);
+      flush_blocks(std::nexttoward(last_weight, 0.0));
     }
   }
 
 protected:
   partition_t current;
   arma::uword current_max;
+  std::set<vertex_t> newblocks;
   double last_weight;
 
-  void merge_blocks(const double& weight, 
+  void flush_blocks(const double weight) {
+    for (const auto& m : newblocks) {
+      partition_t::iterator p = current.find(m);
+      if (p != current.end()) {
+        p->second = arma::sort(p->second);
+      }
+    }
+    newblocks.clear();
+    sequence.emplace_hint(sequence.cend(), weight, current);
+  }
+
+  void merge_blocks(const double weight, 
                     const vertex_t& a, const vertex_t& b, 
                     const vertex_t& key) {
 
+
     // New knot so store the current partition
     if (weight < last_weight) {
-      sequence.emplace_hint(sequence.cend(), weight, current);
+      flush_blocks(weight);
       last_weight = weight;
     }
 
@@ -202,6 +201,9 @@ protected:
     current.erase(pa);
     current.erase(pb);
     current.emplace(key, std::move(newblock));
+
+    // Keep track of the set of new/modified blocks; they need to be sorted
+    newblocks.insert(key);
   }
 };
 
@@ -273,29 +275,35 @@ public:
     // Merge components until there is only one
     while (!edges.empty() && current.size() > minblocknum &&
            current_max < maxblocksize) {
-      std::set<vertex_t> merged = merge(ds, edges);
-      for (const auto& m : merged) {
-        partition_t::iterator p = sequence.rbegin()->second.find(m);
-        if(p == sequence.rbegin()->second.end()) { continue; }
-        p->second.first = arma::sort(p->second.first);
-        p->second.second = arma::sort(p->second.second);
-      }
+      merge(ds, edges);
     }
 
     // Store the final partition
     if (edges.empty() || current.size() == 1) {
-      sequence.emplace_hint(sequence.cend(), lambdamin, current);
+      flush_blocks(lambdamin);
     } else {
-      sequence.emplace_hint(sequence.cend(), 
-                            std::nexttoward(last_weight, 0.0), current);
+      flush_blocks(std::nexttoward(last_weight, 0.0));
     }
   }
 
 protected:
 
   partition_t current;
-  double last_weight;
   arma::uword current_max;
+  std::set<vertex_t> newblocks;
+  double last_weight;
+
+  void flush_blocks(const double weight) {
+    for (const auto& m : newblocks) {
+      partition_t::iterator p = current.find(m);
+      if (p != current.end()) {
+        p->second.first = arma::sort(p->second.first);
+        p->second.second = arma::sort(p->second.second);
+      }
+    }
+    newblocks.clear();
+    sequence.emplace_hint(sequence.cend(), weight, current);
+  }
 
   void merge_blocks(const double& weight, 
                     const vertex_t& a, const vertex_t& b, 
@@ -303,7 +311,7 @@ protected:
 
     // New knot so store the current partition
     if (weight < last_weight) {
-      sequence.emplace_hint(sequence.cend(), weight, current);
+      flush_blocks(weight);
       last_weight = weight;
     }
 
