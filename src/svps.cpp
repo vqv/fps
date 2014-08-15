@@ -6,9 +6,6 @@
 // 
 
 #include <RcppArmadillo.h>
-#include <algorithm>
-#include <vector>
-#include <utility>
 #include <cmath>
 
 #include "admm.h"
@@ -34,8 +31,11 @@ void compute_lambdarange(const BiGraphSeq& gs,
       // Set lambdamin to the last knot with 2 or more blocks
       auto i = gs.crbegin();
       while (i->second.size() == 1) { ++i; }
-      if (i == gs.crend()) { i = gs.crbegin(); }
-      lambdamin = std::min(i->first, lambdamax);
+      if (i == gs.crend()) { 
+        lambdamin = lambdamax;
+      } else {
+        lambdamin = i->first;
+      }
     } else if (lambdaminratio <= 1.0) {
       lambdamin = lambdamax * lambdaminratio;
     }
@@ -60,9 +60,9 @@ void compute_lambdarange(const BiGraphSeq& gs,
 //'                       ignored if \code{== 0}
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
-//'                       lambda; ignored if \code{< 0};
-//' @param lambdamin      Minimum value of lambda; set automatically if 
-//'                       \code{< 0}
+//'                       lambda; ignored if \code{< 0}
+//' @param lambdamin      Minimum value of lambda; automatically determined 
+//'                       if \code{< 0}
 //' @param lambda         Vector of regularization parameter values
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
@@ -110,7 +110,7 @@ List svps(NumericMatrix x, double ndim,
 
   // Sanity checks
   if (x.ncol() < 2 || x.nrow() < 2) { stop("Expected x to be a matrix"); }
-  if (ndim <= 0.0 || ndim >= std::min(x.nrow(), x.ncol())) {
+  if (ndim <= 0.0 || ndim >= std::fmin(x.nrow(), x.ncol())) {
     stop("Expected 0 < ndim < min(dim(x))");
   }
   if (nsol < 1) { stop("Expected nsol > 0"); }
@@ -121,7 +121,7 @@ List svps(NumericMatrix x, double ndim,
   const mat _x(x.begin(), x.nrow(), x.ncol(), false);
 
   // Compute the sequence of solution graphs
-  BiGraphSeq gs(_x, std::max(0.0, lambdamin), 
+  BiGraphSeq gs(_x, std::fmax(0.0, lambdamin), 
                 maxblocksize > 0 ? (uword) maxblocksize 
                                  : _x.n_rows + _x.n_cols);
 

@@ -19,7 +19,7 @@
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
 #'                       lambda; ignored if \code{< 0}
-#' @param lambdamin      Minimum value of lambda; set automatically if 
+#' @param lambdamin      Minimum value of lambda; determined automatically if 
 #'                       \code{< 0}
 #' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty
 #' @param maxiter        Maximum number of iterations for each solution
@@ -93,9 +93,9 @@ fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lam
 #'                       ignored if \code{== 0}
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
-#'                       lambda; ignored if \code{< 0};
-#' @param lambdamin      Minimum value of lambda; set automatically if 
-#'                       \code{< 0}
+#'                       lambda; ignored if \code{< 0}
+#' @param lambdamin      Minimum value of lambda; automatically determined 
+#'                       if \code{< 0}
 #' @param lambda         Vector of regularization parameter values
 #' @param maxiter        Maximum number of iterations for each solution
 #' @param tolerance      Convergence threshold

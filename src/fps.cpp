@@ -6,9 +6,6 @@
 // 
 
 #include <RcppArmadillo.h>
-#include <algorithm>
-#include <vector>
-#include <utility>
 #include <cmath>
 
 #include "admm.h"
@@ -36,8 +33,11 @@ void compute_lambdarange(const GraphSeq& gs,
       // Set lambdamin to the last knot with 2 or more blocks
       auto i = gs.crbegin();
       while (i->second.size() == 1) { ++i; }
-      if (i == gs.crend()) { i = gs.crbegin(); }
-      lambdamin = std::min(i->first, lambdamax);
+      if (i == gs.crend()) { 
+        lambdamin = lambdamax;
+      } else {
+        lambdamin = i->first;
+      }
     } else if (lambdaminratio <= 1.0) {
       lambdamin = lambdamax * lambdaminratio;
     }
@@ -62,7 +62,7 @@ void compute_lambdarange(const GraphSeq& gs,
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
 //'                       lambda; ignored if \code{< 0}
-//' @param lambdamin      Minimum value of lambda; set automatically if 
+//' @param lambdamin      Minimum value of lambda; determined automatically if 
 //'                       \code{< 0}
 //' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty
 //' @param maxiter        Maximum number of iterations for each solution
@@ -132,7 +132,7 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
   const mat _S(S.begin(), S.nrow(), S.ncol(), false);
 
   // Compute the sequence of solution graphs
-  GraphSeq gs(_S, std::max(0.0, lambdamin), 
+  GraphSeq gs(_S, std::fmax(0.0, lambdamin), 
               maxblocksize > 0 ? (uword) maxblocksize : _S.n_cols);
 
   // Generate lambda sequence if necessary
