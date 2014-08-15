@@ -138,7 +138,8 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
   // Generate lambda sequence if necessary
   vec _lambda;
   if (lambda.size() > 0) {
-    _lambda = arma::sort(vec(lambda.begin(), lambda.size()), "descend");
+    _lambda = lambda;
+    std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
     nsol = _lambda.n_elem;
   } else {
     double lambdamax;
@@ -196,9 +197,9 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     // Find active vertex partition and construct block matrix
     const GraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
-    block::symmap<GraphSeq::vertex_t> b_S(_S, active), 
-                                      b_z(_z, active), 
-                                      b_u(_u, active);
+    block::symmap<GraphSeq::partition_t> b_S(_S, active), 
+                                         b_z(_z, active), 
+                                         b_u(_u, active);
 
     // ADMM
     niter[i] = admm(FantopeProjection(ndim), 
@@ -210,14 +211,14 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
                     admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Restore dense matrices
-    b_z.copy_to(_z);
-    b_u.copy_to(_u);
+    b_z.copy_to(_z, active);
+    b_u.copy_to(_u, active);
 
     // Store solution
     NumericMatrix p(_S.n_rows, _S.n_cols);
     p.attr("dimnames") = S.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    b_z.copy_to(_p);
+    b_z.copy_to(_p, active);
     projection(i) = p;
 
     L1(i) = block::sumabs(b_z);

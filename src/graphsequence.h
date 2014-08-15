@@ -11,29 +11,20 @@
 #include <queue>
 #include <map>
 #include <utility>
+#include <algorithm>
 #include <boost/pending/disjoint_sets.hpp>
-
-template <typename Derived>
-struct GraphSeqBase_traits;
 
 // A map representing a sequence of vertex partitions induced by 
 // the connected components that form as edges are added in decreasing 
 // order of weight.
 // A component is represented by std::set<V>
 // A partition is represented by std::map<V, std::set<V>>
-template <typename Derived>
+template <typename Vertex, typename Block>
 struct GraphSeqBase {
-  typedef typename GraphSeqBase_traits<Derived>::vertex_t vertex_t;
-  typedef std::pair<double, std::pair<vertex_t, vertex_t>> edge_t;
-
-  typedef typename GraphSeqBase_traits<Derived>::block_t block_t;
-  typedef std::map<vertex_t, block_t> partition_t;
+  typedef Vertex vertex_t;
+  typedef Block block_t;
+  typedef std::map<Vertex, Block> partition_t;
   typedef std::map<double, partition_t, std::greater<double>> sequence_t;
-
-  // The first partition whose weight is not > is active
-  const partition_t& get_active(const double weight) const {
-    return sequence.lower_bound(weight)->second;
-  }
 
   // Expose a subset of the map interface to sequence
   typedef typename sequence_t::const_iterator const_iterator;
@@ -43,10 +34,13 @@ struct GraphSeqBase {
   typedef typename sequence_t::mapped_type mapped_type;
   typedef typename sequence_t::size_type size_type;
 
+  GraphSeqBase() : 
+    current_max(0),
+    last_weight(std::numeric_limits<double>::infinity())
+    {}
+
   size_type size() const { return sequence.size(); };
 
-  mapped_type& operator[](const key_type& key) { return sequence[key]; }
-  mapped_type& operator[](key_type&& key) { return sequence[key]; }
   const_iterator begin() const { return sequence.begin(); }
   const_iterator end() const { return sequence.end(); }
   const_iterator cbegin() const { return sequence.cbegin(); }
@@ -56,10 +50,52 @@ struct GraphSeqBase {
   const_reverse_iterator crbegin() const { return sequence.crbegin(); }
   const_reverse_iterator crend() const { return sequence.crend(); }
 
+  // The first partition whose weight is not > is active
+  const partition_t& get_active(const double weight) const {
+    return sequence.lower_bound(weight)->second;
+  }
+
 protected:
+  typedef std::pair<double, std::pair<Vertex, Vertex>> edge_t;
+  typedef std::priority_queue<edge_t> queue_t;
+
   sequence_t sequence;
 
-  typedef std::priority_queue<edge_t> queue_t;
+  partition_t current;
+  arma::uword current_max;
+  std::set<Vertex> newblocks;
+  double last_weight;
+
+  void flush_blocks(const double weight) {
+    for (const auto& m : newblocks) {
+      auto p = current.find(m);
+      if (p != current.end()) { 
+        p->second.sort();
+      }
+    }
+    newblocks.clear();
+    sequence.insert(sequence.cend(), std::make_pair(weight, current));
+  }
+
+  void merge_blocks(const double weight, const Vertex& a, const Vertex& b, 
+                    const Vertex& c) {
+
+    // New knot so store the current partition
+    if (weight < last_weight) {
+      flush_blocks(weight);
+      last_weight = weight;
+    }
+
+    auto pa = current.find(a);
+    auto pb = current.find(b);
+
+    Block newblock(pa->second, pb->second);
+    if (newblock.size() > current_max) { current_max = newblock.size(); }
+
+    current.erase(pa);
+    current.erase(pb);
+    current.insert(std::make_pair(c, std::move(newblock)));
+  }
 
   // Returns a set of identifiers for blocks that merged. 
   // Note that these blocks could possibly merge into more than 
@@ -67,7 +103,7 @@ protected:
   template <typename DisjointSets>
   void merge(DisjointSets& ds, queue_t& edges) {
 
-    vertex_t a, b, key;
+    Vertex a, b, c;
     double weight;
 
     // Pop edges until we find an edge between two components
@@ -83,8 +119,8 @@ protected:
 
       // Merge components and pop the edge
       ds.link(a, b);
-      key = ds.find_set(edges.top().second.first);
-      static_cast<Derived*>(this)->merge_blocks(weight, a, b, key);
+      c = ds.find_set(edges.top().second.first);
+      merge_blocks(weight, a, b, c);
       edges.pop();
 
       // Add all edges with the same weight in case of ties
@@ -93,8 +129,8 @@ protected:
         b = ds.find_set(edges.top().second.second);
         if (a != b) {
           ds.link(a, b);
-          key = ds.find_set(edges.top().second.first);
-          static_cast<Derived*>(this)->merge_blocks(weight, a, b, key);
+          c = ds.find_set(edges.top().second.first);
+          merge_blocks(weight, a, b, c);
         }
         edges.pop();
       }
@@ -102,51 +138,9 @@ protected:
     }
   }
 
-};
-
-struct GraphSeq;
-
-template <>
-struct GraphSeqBase_traits<GraphSeq> {
-public:
-  typedef arma::uword vertex_t;
-  typedef arma::uvec block_t;
-};
-
-struct GraphSeq : GraphSeqBase<GraphSeq> {
-public:
-  friend struct GraphSeqBase<GraphSeq>;
-  typedef typename GraphSeqBase_traits<GraphSeq>::vertex_t vertex_t;
-  typedef typename GraphSeqBase_traits<GraphSeq>::block_t block_t;
-
-  GraphSeq(const arma::mat& x, double lambdamin, 
-           arma::uword maxblocksize, arma::uword minblocknum = 1) {
-
-    // Construct edges
-    std::priority_queue<edge_t> edges;
-    for (arma::uword j = 0; j < x.n_cols; ++j) {
-      for (arma::uword i = j + 1; i < x.n_rows; ++i) {
-        double weight = std::fabs(x(i,j));
-        if (weight > lambdamin) {
-          edges.emplace(weight, std::make_pair(i, j));
-        }
-      }
-    }
-
-    // Initialize disjoint sets structure
-    std::vector<arma::uword> rank(x.n_cols);
-    std::vector<arma::uword> parent(x.n_cols);
-    boost::disjoint_sets<arma::uword*, arma::uword*> ds(&rank[0], &parent[0]);
-
-    // Initialize singleton partition
-    for (arma::uword v = 0; v < x.n_cols; ++v) {
-      arma::uvec b(1);
-      b[0] = v;
-      ds.make_set(v);
-      current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
-    }
-    last_weight = std::numeric_limits<double>::infinity();
-    current_max = 1;
+  template <typename DisjointSets>
+  void init(DisjointSets& ds, queue_t& edges, double minweight, 
+            arma::uword maxblocksize, arma::uword minblocknum = 1) {
 
     // Merge components until there is only one
     while (!edges.empty() && current.size() > minblocknum && 
@@ -156,75 +150,126 @@ public:
 
     // Store the final partition
     if (edges.empty() || current.size() == 1) {
-      flush_blocks(lambdamin);
+      flush_blocks(minweight);
     } else {
       flush_blocks(std::nexttoward(last_weight, 0.0));
     }
   }
 
-protected:
-  partition_t current;
-  arma::uword current_max;
-  std::set<vertex_t> newblocks;
-  double last_weight;
+};
 
-  void flush_blocks(const double weight) {
-    for (const auto& m : newblocks) {
-      partition_t::iterator p = current.find(m);
-      if (p != current.end()) {
-        p->second = arma::sort(p->second);
+struct GraphBlock : public arma::uvec {
+public:
+  GraphBlock(const GraphBlock& a, const GraphBlock& b) 
+    : arma::uvec(a.n_elem + b.n_elem) 
+  {
+    auto i = begin();
+    for (auto ai : a) { *i++ = ai; }
+    for (auto bi : b) { *i++ = bi; }
+  }
+
+  GraphBlock(arma::uword i) : arma::uvec(1) { at(0) = i; }
+
+  arma::uword size() const { return n_elem; }
+  void sort() { std::sort(begin(), end()); }
+};
+
+struct GraphSeq : GraphSeqBase<arma::uword, GraphBlock> {
+
+  GraphSeq(const arma::mat& x, double minweight, 
+           arma::uword maxblocksize, arma::uword minblocknum = 1) {
+
+    // Construct edges
+    std::priority_queue<edge_t> edges;
+    for (arma::uword j = 0; j < x.n_cols; ++j) {
+      for (arma::uword i = j + 1; i < x.n_rows; ++i) {
+        double weight = std::fabs(x(i,j));
+        if (weight > minweight) {
+          edges.push( std::make_pair(weight, std::make_pair(i, j)) );
+        }
       }
     }
-    newblocks.clear();
-    sequence.emplace_hint(sequence.cend(), weight, current);
+
+    init(x.n_cols, edges, minweight, maxblocksize, minblocknum);
   }
 
-  void merge_blocks(const double weight, 
-                    const vertex_t& a, const vertex_t& b, 
-                    const vertex_t& key) {
+  // Sparse matrix constructor - expects x to contain at least a lower triangle
+  GraphSeq(const arma::sp_mat& x, double minweight, 
+           arma::uword maxblocksize, arma::uword minblocknum = 1) {
 
-
-    // New knot so store the current partition
-    if (weight < last_weight) {
-      flush_blocks(weight);
-      last_weight = weight;
+    // Construct edges
+    std::priority_queue<edge_t> edges;
+    for (auto i = x.begin(); i != x.end(); ++i) {
+      double weight = std::fabs(*i);
+      if (weight > minweight && i.row() > i.col()) {
+        edges.push( std::make_pair(weight, std::make_pair(i.row(), i.col())) );
+      }
     }
 
-    partition_t::iterator pa, pb;
+    init(x.n_cols, edges, minweight, maxblocksize, minblocknum);
+  }
 
-    pa = current.find(a), 
-    pb = current.find(b);
-    block_t newblock = arma::join_vert(pa->second, pb->second);
+protected:
+  void init(arma::uword n, queue_t& edges, double minweight, 
+            arma::uword maxblocksize, arma::uword minblocknum = 1) 
+  {
+    // Initialize disjoint sets structure
+    std::vector<arma::uword> rank(n);
+    std::vector<arma::uword> parent(n);
+    boost::disjoint_sets<arma::uword*, arma::uword*> ds(&rank[0], &parent[0]);
 
-    if (newblock.n_elem > current_max) { current_max = newblock.n_elem; }
+    // Initialize singleton partition
+    for (arma::uword v = 0; v < n; ++v) {
+      ds.make_set(v);
+      current.insert(current.cend(), 
+                     std::make_pair(ds.find_set(v), 
+                                    GraphBlock(v)));
+    }
 
-    current.erase(pa);
-    current.erase(pb);
-    current.emplace(key, std::move(newblock));
-
-    // Keep track of the set of new/modified blocks; they need to be sorted
-    newblocks.insert(key);
+    // Initialize graph sequence
+    GraphSeqBase<arma::uword, GraphBlock>::init(
+      ds, edges, minweight, maxblocksize, minblocknum);
   }
 };
 
-struct BiGraphSeq;
+// (row?, index)
+typedef std::pair<bool, arma::uword> BiGraphVertex;
 
-template <>
-struct GraphSeqBase_traits<BiGraphSeq> {
-public:
-  enum class margin_t { column, row };
-  typedef std::pair<margin_t, arma::uword> vertex_t;
-  typedef std::pair<arma::uvec, arma::uvec> block_t;
+struct BiGraphBlock {
+
+  arma::uvec first, second;
+
+  BiGraphBlock(const BiGraphVertex& v) {
+    arma::uvec *i = v.first ? &first : &second;
+    i->set_size(1);
+    i->at(0) = v.second;
+  }
+
+  BiGraphBlock(const BiGraphBlock& a, const BiGraphBlock& b) 
+    : first(a.first.n_elem + b.first.n_elem),
+      second(a.second.n_elem + b.second.n_elem) 
+  {
+    arma::uvec::iterator i;
+
+    i = first.begin();
+    for (auto ai : a.first) { *i++ = ai;}
+    for (auto bi : b.first) { *i++ = bi;}
+
+    i = second.begin();
+    for (auto ai : a.second) { *i++ = ai;}
+    for (auto bi : b.second) { *i++ = bi;}
+  }
+
+  arma::uword size() const { return first.n_elem + second.n_elem; }
+  void sort() { 
+    std::sort(first.begin(), first.end());
+    std::sort(second.begin(), second.end());
+  }
 };
 
-struct BiGraphSeq : GraphSeqBase<BiGraphSeq> {
+struct BiGraphSeq : GraphSeqBase<BiGraphVertex, BiGraphBlock> {
 public:
-  friend struct GraphSeqBase<BiGraphSeq>;
-  typedef typename GraphSeqBase_traits<BiGraphSeq>::margin_t margin_t;
-  typedef typename GraphSeqBase_traits<BiGraphSeq>::vertex_t vertex_t;
-  typedef typename GraphSeqBase_traits<BiGraphSeq>::block_t block_t;
-
-  BiGraphSeq(const arma::mat& x, double lambdamin, 
+  BiGraphSeq(const arma::mat& x, double minweight, 
              arma::uword maxblocksize, arma::uword minblocknum = 1) {
 
     // Construct edges
@@ -232,18 +277,43 @@ public:
     for (arma::uword j = 0; j < x.n_cols; ++j) {
       for (arma::uword i = 0 ; i < x.n_rows; ++i) {
         double weight = std::fabs(x(i,j));
-        if (weight > lambdamin) {
-          edges.emplace(weight, 
-                        std::make_pair(std::make_pair(margin_t::row, i),
-                                       std::make_pair(margin_t::column, j))
-          );
+        if (weight > minweight) {
+          edges.push(std::make_pair(weight, 
+                      std::make_pair(BiGraphVertex(true, i), 
+                                     BiGraphVertex(false, j)) ));
         }
       }
     }
 
+    init(x.n_rows, x.n_cols, edges, minweight, maxblocksize, minblocknum);
+  }
+
+  // Sparse matrix constructor
+  BiGraphSeq(const arma::sp_mat& x, double minweight, 
+             arma::uword maxblocksize, arma::uword minblocknum = 1) {
+
+    // Construct edges
+    std::priority_queue<edge_t> edges;
+    for (auto i = x.begin(); i != x.end(); ++i) {
+      double weight = std::fabs(*i);
+      if (weight > minweight) {
+        edges.push(std::make_pair(weight, 
+                    std::make_pair(BiGraphVertex(true, i.row()), 
+                                   BiGraphVertex(false, i.col())) ));        
+      }
+    }
+
+    init(x.n_rows, x.n_cols, edges, minweight, maxblocksize, minblocknum);
+  }
+
+protected:
+  void init(arma::uword n_rows, arma::uword n_cols, queue_t& edges, 
+            double minweight, arma::uword maxblocksize, 
+            arma::uword minblocknum = 1) 
+  {
     // Initialize disjoint sets structure
-    typedef std::map<vertex_t, std::size_t> rank_t;
-    typedef std::map<vertex_t, vertex_t> parent_t;
+    typedef std::map<BiGraphVertex, std::size_t> rank_t;
+    typedef std::map<BiGraphVertex, BiGraphVertex> parent_t;
     rank_t rank_map;
     parent_t parent_map;
     typedef boost::associative_property_map<rank_t> Rank;
@@ -253,82 +323,22 @@ public:
     boost::disjoint_sets<Rank, Parent> ds(rank_pmap, parent_pmap);
 
     // Initialize singleton partition
-    for (arma::uword i = 0; i < x.n_rows; ++i) {
-      vertex_t v = std::make_pair(margin_t::row, i);
-      block_t b;
-      b.first.set_size(1);
-      b.first[0] = i;
+    for (arma::uword i = 0; i < n_rows; ++i) {
+      BiGraphVertex v(true, i);
       ds.make_set(v);
-      current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
+      current.insert(current.cend(), 
+                     std::make_pair(ds.find_set(v), BiGraphBlock(v)));
     }
-    for (arma::uword j = 0; j < x.n_cols; ++j) {
-      vertex_t v = std::make_pair(margin_t::column, j);
-      block_t b;
-      b.second.set_size(1);
-      b.second[0] = j;
+    for (arma::uword j = 0; j < n_cols; ++j) {
+      BiGraphVertex v(false, j);
       ds.make_set(v);
-      current.emplace_hint(current.cend(), ds.find_set(v), std::move(b));
-    }
-    last_weight = std::numeric_limits<double>::infinity();
-    current_max = 1;
-
-    // Merge components until there is only one
-    while (!edges.empty() && current.size() > minblocknum &&
-           current_max < maxblocksize) {
-      merge(ds, edges);
+      current.insert(current.cend(), 
+                     std::make_pair(ds.find_set(v), BiGraphBlock(v)));
     }
 
-    // Store the final partition
-    if (edges.empty() || current.size() == 1) {
-      flush_blocks(lambdamin);
-    } else {
-      flush_blocks(std::nexttoward(last_weight, 0.0));
-    }
-  }
-
-protected:
-
-  partition_t current;
-  arma::uword current_max;
-  std::set<vertex_t> newblocks;
-  double last_weight;
-
-  void flush_blocks(const double weight) {
-    for (const auto& m : newblocks) {
-      partition_t::iterator p = current.find(m);
-      if (p != current.end()) {
-        p->second.first = arma::sort(p->second.first);
-        p->second.second = arma::sort(p->second.second);
-      }
-    }
-    newblocks.clear();
-    sequence.emplace_hint(sequence.cend(), weight, current);
-  }
-
-  void merge_blocks(const double& weight, 
-                    const vertex_t& a, const vertex_t& b, 
-                    const vertex_t& key) {
-
-    // New knot so store the current partition
-    if (weight < last_weight) {
-      flush_blocks(weight);
-      last_weight = weight;
-    }
-
-    block_t newblock;
-    partition_t::iterator pa, pb;
-
-    pa = current.find(a);
-    pb = current.find(b);
-    newblock.first = arma::join_vert(pa->second.first, pb->second.first);
-    newblock.second = arma::join_vert(pa->second.second, pb->second.second);
-
-    arma::uword newblocksize = newblock.first.n_elem + newblock.second.n_elem;
-    if (newblocksize > current_max) { current_max = newblocksize; }
-
-    current.erase(pa);
-    current.erase(pb);
-    current.emplace(key, std::move(newblock));
+    // Initialize graph sequence
+    GraphSeqBase<BiGraphVertex, BiGraphBlock>::init(
+      ds, edges, minweight, maxblocksize, minblocknum);
   }
 };
 

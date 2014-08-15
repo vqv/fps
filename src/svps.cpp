@@ -128,7 +128,8 @@ List svps(NumericMatrix x, double ndim,
   // Generate lambda sequence if necessary
   vec _lambda;
   if (lambda.size() > 0) {
-    _lambda = arma::sort(vec(lambda.begin(), lambda.size()), "descend");
+    _lambda = lambda;
+    std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
     nsol = _lambda.n_elem;
   } else {
     double lambdamax;
@@ -192,9 +193,9 @@ List svps(NumericMatrix x, double ndim,
     // Find active vertex partition and construct block matrix
     const BiGraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
-    block::map<BiGraphSeq::vertex_t> b_x(_x, active), 
-                                     b_z(_z, active), 
-                                     b_u(_u, active);
+    block::map<BiGraphSeq::partition_t> b_x(_x, active), 
+                                        b_z(_z, active), 
+                                        b_u(_u, active);
 
     // ADMM
     niter[i] = admm(SingularValueProjection(ndim), 
@@ -206,14 +207,14 @@ List svps(NumericMatrix x, double ndim,
                     admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Restore dense matrices
-    b_z.copy_to(_z);
-    b_u.copy_to(_u);
+    b_z.copy_to(_z, active);
+    b_u.copy_to(_u, active);
 
     // Store solution
     NumericMatrix p(_x.n_rows, _x.n_cols);
     p.attr("dimnames") = x.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    b_z.copy_to(_p);
+    b_z.copy_to(_p, active);
     projection(i) = p;
 
     L1(i) = block::sumabs(b_z);
