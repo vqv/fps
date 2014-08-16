@@ -11,36 +11,13 @@
 #include "admm.h"
 #include "block/block"
 #include "graphsequence.h"
+#include "lambda.h"
 #include "projection.h"
 #include "softthreshold.h"
 #include "distance.h"
 
 using namespace Rcpp;
 using namespace arma;
-
-// Computes minimum and maximum values for lambda based on theory 
-// and heuristic.
-void compute_lambdarange(const BiGraphSeq& gs, 
-                         double& lambdamin, double& lambdamax, 
-                         const double lambdaminratio) {
-
-  lambdamax = gs.cbegin()->first;
-
-  if (lambdamin < 0) {
-    if (lambdaminratio < 0) {
-      // Set lambdamin to the last knot with 2 or more blocks
-      auto i = gs.crbegin();
-      while (i->second.size() == 1) { ++i; }
-      if (i == gs.crend()) { 
-        lambdamin = lambdamax;
-      } else {
-        lambdamin = i->first;
-      }
-    } else if (lambdaminratio <= 1.0) {
-      lambdamin = lambdamax * lambdaminratio;
-    }
-  }
-}
 
 //' Singular Value Projection and Selection
 //'
@@ -128,14 +105,12 @@ List svps(NumericMatrix x, double ndim,
   // Generate lambda sequence if necessary
   vec _lambda;
   if (lambda.size() > 0) {
-    _lambda = lambda;
+    _lambda = vec(lambda.begin(), lambda.size());
     std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
-    nsol = _lambda.n_elem;
   } else {
-    double lambdamax;
-    compute_lambdarange(gs, lambdamin, lambdamax, lambdaminratio);
-    _lambda = arma::linspace(lambdamax, lambdamin, nsol);
+    _lambda = compute_lambda(gs, lambdamin, lambdaminratio, nsol);
   }
+  nsol = _lambda.n_elem;
 
   // Placeholders for solutions
   List            projection(nsol);
