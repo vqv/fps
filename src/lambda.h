@@ -4,7 +4,7 @@
 #include <RcppArmadillo.h>
 
 template <typename G>
-arma::vec compute_lambda(const & gs, double lambdamin, 
+arma::vec compute_lambda(const G& gs, double lambdamin, 
                          double lambdaminratio, arma::uword n) {
 
   double lambdamax = gs.cbegin()->first;

@@ -141,7 +141,7 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
 
   // ADMM parameters
   double tolerance_abs = std::sqrt(ndim) * tolerance,
-         admm_penalty = arma::norm(vectorise(_S), "inf"),
+         admm_penalty = gs.cbegin()->first,
          admm_adjust = 2.0;
 
   // Outer loop to compute solution path
