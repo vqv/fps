@@ -2,7 +2,7 @@
 #define __DISTANCE_H
 
 #include "RcppArmadillo.h"
-#include "block/block"
+#include "block/block.h"
 #include <cmath>
 
 struct FrobeniusDistance {

@@ -2,5 +2,5 @@ PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 CXX_STD = CXX11
 PKG_CXXFLAGS = -DARMA_DONT_USE_CXX11
 
-SOURCES = $(wildcard *.cpp block/*.cpp)
+SOURCES = $(wildcard *.cpp block/*.cpp graph/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)

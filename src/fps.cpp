@@ -9,8 +9,8 @@
 #include <cmath>
 
 #include "admm.h"
-#include "block/block"
-#include "graphsequence.h"
+#include "block/block.h"
+#include "graphseq/graphseq.h"
 #include "lambda.h"
 #include "projection.h"
 #include "softthreshold.h"

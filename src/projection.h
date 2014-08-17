@@ -8,7 +8,7 @@
 #define __PROJECTION_H
 
 #include <RcppArmadillo.h>
-#include "block/block"
+#include "block/block.h"
 
 struct FantopeProjection {
 
