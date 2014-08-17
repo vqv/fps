@@ -339,6 +339,18 @@ protected:
     // Initialize graph sequence
     GraphSeqBase<BiGraphVertex, BiGraphBlock>::init(
       ds, edges, minweight, maxblocksize, minblocknum);
+
+    // Remove singletons
+    for (auto& g : sequence) {
+      for (auto i = g.second.begin(); i != g.second.end(); ) {
+        if (i->second.first.n_elem == 0 || i->second.second.n_elem == 0) {
+          i = g.second.erase(i);
+        } else {
+          ++i;
+        }
+      }
+    }
+
   }
 };
 
