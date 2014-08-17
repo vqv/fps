@@ -19,10 +19,10 @@ ignored if \code{== 0}}
 
 \item{lambdaminratio}{Minimum value of lambda as a fraction of
 the automatically determined maximum value of
-lambda; ignored if \code{< 0};}
+lambda; ignored if \code{< 0}}
 
-\item{lambdamin}{Minimum value of lambda; set automatically if
-\code{< 0}}
+\item{lambdamin}{Minimum value of lambda; automatically determined
+if \code{< 0}}
 
 \item{lambda}{Vector of regularization parameter values}
 

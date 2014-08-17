@@ -22,7 +22,7 @@ fps(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
 the automatically determined maximum value of
 lambda; ignored if \code{< 0}}
 
-\item{lambdamin}{Minimum value of lambda; set automatically if
+\item{lambdamin}{Minimum value of lambda; determined automatically if
 \code{< 0}}
 
 \item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty}
