@@ -182,14 +182,14 @@ List svps(NumericMatrix x, double ndim,
                     admm_penalty, admm_adjust, maxiter, tolerance_abs);
 
     // Restore dense matrices
-    b_z.copy_to(_z, active);
-    b_u.copy_to(_u, active);
+    b_z.copy_to(_z);
+    b_u.copy_to(_u);
 
     // Store solution
     NumericMatrix p(_x.n_rows, _x.n_cols);
     p.attr("dimnames") = x.attr("dimnames");
     mat _p(p.begin(), p.nrow(), p.ncol(), false);
-    b_z.copy_to(_p, active);
+    b_z.copy_to(_p);
     projection(i) = p;
 
     L1(i) = block::sumabs(b_z);
