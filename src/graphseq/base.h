@@ -141,11 +141,7 @@ protected:
     }
 
     // Store the final partition
-    if (edges.empty() || current.size() == 1) {
-      flush_blocks(minweight);
-    } else {
-      flush_blocks(std::nexttoward(last_weight, 0.0));
-    }
+    if (minweight < last_weight) { flush_blocks(minweight); }
   }
 
 };
