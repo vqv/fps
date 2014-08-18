@@ -205,6 +205,13 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
 
   if (verbose > 0) { Rcout << std::endl; }
 
+  // Store ordering of rows/columns
+  arma::uvec order(_S.n_cols);
+  auto i = order.begin();
+  for (const auto& b : gs.crbegin()->second) {
+    for (auto bi : b.second) { *i++ = bi + 1; }
+  }
+
   // Return
   List out = List::create(
     Named("ndim") = ndim,
@@ -215,6 +222,8 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     Named("L1") = L1,
     Named("var.explained") = varexplained,
     Named("var.total") = trace(_S),
+    Named("order") = wrap(order.memptr(), 
+                          order.memptr() + order.n_elem),
     Named("niter") = niter
   );
   out.attr("class") = "fps";

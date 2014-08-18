@@ -23,7 +23,6 @@ public:
   GraphBlock(arma::uword i) : arma::uvec(1) { at(0) = i; }
 
   arma::uword size() const { return n_elem; }
-  void sort() { std::sort(begin(), end()); }
 };
 
 struct GraphSeq : GraphSeqBase<arma::uword, GraphBlock> {

@@ -205,6 +205,14 @@ List svps(NumericMatrix x, double ndim,
 
   if (verbose > 0) { Rcout << std::endl; }
 
+  // Store ordering of rows/columns
+  arma::uvec order_row(_x.n_rows), order_col(_x.n_cols);
+  auto i = order_row.begin(), j = order_col.begin();
+  for (const auto& b : gs.crbegin()->second) {
+    for (auto bi : b.second.first) { *i++ = bi + 1; }
+    for (auto bi : b.second.second) { *j++ = bi + 1; }
+  }
+
   // Return
   List out = List::create(
     Named("ndim") = ndim,
@@ -217,6 +225,10 @@ List svps(NumericMatrix x, double ndim,
     Named("var.row") = var_row,
     Named("var.col") = var_col,
     Named("var.total") = accu(square(_x)),
+    Named("order.row") = wrap(order_row.memptr(), 
+                              order_row.memptr() + order_row.n_elem),
+    Named("order.col") = wrap(order_col.memptr(), 
+                              order_col.memptr() + order_col.n_elem),
     Named("niter") = niter
   );
   out.attr("class") = "svps";

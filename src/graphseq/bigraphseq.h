@@ -39,10 +39,6 @@ struct BiGraphBlock {
   }
 
   arma::uword size() const { return first.n_elem + second.n_elem; }
-  void sort() { 
-    std::sort(first.begin(), first.end());
-    std::sort(second.begin(), second.end());
-  }
 };
 
 struct BiGraphSeq : GraphSeqBase<BiGraphVertex, BiGraphBlock> {

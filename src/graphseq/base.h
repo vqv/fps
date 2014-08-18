@@ -65,13 +65,6 @@ protected:
   double last_weight;
 
   void flush_blocks(const double weight) {
-    for (const auto& m : newblocks) {
-      auto p = current.find(m);
-      if (p != current.end()) { 
-        p->second.sort();
-      }
-    }
-    newblocks.clear();
     sequence.insert(sequence.cend(), std::make_pair(weight, current));
   }
 
@@ -87,7 +80,8 @@ protected:
     auto pa = current.find(a);
     auto pb = current.find(b);
 
-    Block newblock(pa->second, pb->second);
+    Block newblock = pa->second.size() > pb->second.size() ?
+        Block(pa->second, pb->second) : Block(pb->second, pa->second);
     if (newblock.size() > current_max) { current_max = newblock.size(); }
 
     current.erase(pa);
