@@ -8,9 +8,9 @@
 #' @export
 coef.fps <- function(object, lambda, ...) {
     i <- which.min(abs(object$lambda - lambda))
-    v <- svd(object$projection[[i]], nu = 0, nv = ceiling(object$ndim))$v
+    v <- Matrix(svd(object$projection[[i]], 
+                    nu = 0, nv = ceiling(object$ndim))$v)
     rownames(v) <- rownames(object$projection[[i]])
-    class(v) <- c('fps_coef', 'matrix')
     return(v)
 }
 
@@ -27,8 +27,7 @@ coef.svps <- function(object, lambda, ...) {
     s <- svd(object$projection[[i]], 
              nu = ceiling(object$ndim), nv = ceiling(object$ndim))
 
-    out <- list(u = s$u, v = s$v)
-    class(out) <- 'svps_coef'
+    out <- list(u = Matrix(s$u), v = Matrix(s$v))
     rownames(out$u) <- rownames(object$projection[[i]])
     rownames(out$v) <- colnames(object$projection[[i]])
 
