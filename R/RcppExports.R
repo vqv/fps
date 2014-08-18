@@ -40,6 +40,7 @@
 #'   \item{var.explained}{variance explained by each estimate (trace inner 
 #'                        product of the projection and \code{S})}
 #'   \item{var.total}{total variance (trace of \code{S})}
+#'   \item{order}{a vector giving a permutation of the row/column indices of \code{S} so that the projection matrix estimates are in block-diagonal form}
 #'   \item{niter}{a vector containing the number of ADMM iterations for each 
 #'                estimate}
 #'
@@ -122,6 +123,8 @@ fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lam
 #'   \item{var.row}{}
 #'   \item{var.col}{}
 #'   \item{var.total}{}
+#'   \item{order.row}{a vector giving a permutation of the row indices of \code{x} so that the projection matrix estimates are in block form}
+#'   \item{order.col}{a vector giving a permutation of the column indices of \code{x} so that the projection matrix estimates are in block form}
 #'   \item{niter}{a vector containing the number of ADMM iterations for each 
 #'                estimate}
 #'

@@ -58,6 +58,7 @@ using namespace arma;
 //'   \item{var.explained}{variance explained by each estimate (trace inner 
 //'                        product of the projection and \code{S})}
 //'   \item{var.total}{total variance (trace of \code{S})}
+//'   \item{order}{a vector giving a permutation of the row/column indices of \code{S} so that the projection matrix estimates are in block-diagonal form}
 //'   \item{niter}{a vector containing the number of ADMM iterations for each 
 //'                estimate}
 //'

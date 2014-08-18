@@ -66,6 +66,8 @@ using namespace arma;
 //'   \item{var.row}{}
 //'   \item{var.col}{}
 //'   \item{var.total}{}
+//'   \item{order.row}{a vector giving a permutation of the row indices of \code{x} so that the projection matrix estimates are in block form}
+//'   \item{order.col}{a vector giving a permutation of the column indices of \code{x} so that the projection matrix estimates are in block form}
 //'   \item{niter}{a vector containing the number of ADMM iterations for each 
 //'                estimate}
 //'
