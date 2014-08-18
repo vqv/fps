@@ -106,19 +106,23 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
   // Wrap the input matrix with an arma::mat
   const mat _S(S.begin(), S.nrow(), S.ncol(), false);
 
+  vec _lambda;
+
+  if(lambda.size() > 0) {
+    _lambda = arma::vec(lambda.begin(), lambda.size());
+    std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
+    lambdamin = _lambda[_lambda.n_elem - 1];
+    nsol = _lambda.n_elem;
+  }
+
   // Compute the sequence of solution graphs
   GraphSeq gs(_S, std::fmax(0.0, lambdamin), 
               maxblocksize > 0 ? (uword) maxblocksize : _S.n_cols);
 
   // Generate lambda sequence if necessary
-  vec _lambda;
-  if (lambda.size() > 0) {
-    _lambda = arma::vec(lambda.begin(), lambda.size());
-    std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
-  } else {
+  if (lambda.size() == 0) {
     _lambda = compute_lambda(gs, lambdamin, lambdaminratio, nsol);
   }
-  nsol = _lambda.n_elem;
 
   // Placeholders for solutions
   List            projection(nsol);

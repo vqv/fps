@@ -97,20 +97,24 @@ List svps(NumericMatrix x, double ndim,
   // Map x to an arma::mat
   const mat _x(x.begin(), x.nrow(), x.ncol(), false);
 
+  vec _lambda;
+
+  if (lambda.size() > 0) {
+    _lambda = vec(lambda.begin(), lambda.size());
+    std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
+    lambdamin = _lambda[_lambda.n_elem - 1];
+    nsol = _lambda.n_elem;
+  }
+
   // Compute the sequence of solution graphs
   BiGraphSeq gs(_x, std::fmax(0.0, lambdamin), 
                 maxblocksize > 0 ? (uword) maxblocksize 
                                  : _x.n_rows + _x.n_cols);
 
   // Generate lambda sequence if necessary
-  vec _lambda;
-  if (lambda.size() > 0) {
-    _lambda = vec(lambda.begin(), lambda.size());
-    std::sort(_lambda.begin(), _lambda.end(), std::greater<double>());
-  } else {
+  if (lambda.size() == 0) {
     _lambda = compute_lambda(gs, lambdamin, lambdaminratio, nsol);
   }
-  nsol = _lambda.n_elem;
 
   // Placeholders for solutions
   List            projection(nsol);
