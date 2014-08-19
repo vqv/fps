@@ -25,7 +25,8 @@ lambda; ignored if \code{< 0}}
 \item{lambdamin}{Minimum value of lambda; determined automatically if
 \code{< 0}}
 
-\item{lambda}{Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty}
+\item{lambda}{Vector of regularization parameter values; overrides
+nsol, maxblocksize, and lambdamin if nonempty}
 
 \item{maxiter}{Maximum number of iterations for each solution}
 

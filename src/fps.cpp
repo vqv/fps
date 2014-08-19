@@ -39,7 +39,8 @@ using namespace arma;
 //'                       lambda; ignored if \code{< 0}
 //' @param lambdamin      Minimum value of lambda; determined automatically if 
 //'                       \code{< 0}
-//' @param lambda         Vector of regularization parameter values; overrides //'                       nsol, maxblocksize, and lambdamin if nonempty
+//' @param lambda         Vector of regularization parameter values; overrides
+//'                       nsol, maxblocksize, and lambdamin if nonempty
 //' @param maxiter        Maximum number of iterations for each solution
 //' @param tolerance      Convergence threshold
 //' @param verbose        Level of verbosity; silent if \code{= 0}; otherwise 
