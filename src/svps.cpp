@@ -144,7 +144,7 @@ List svps(NumericMatrix x, double ndim,
 
   // ADMM parameters
   double tolerance_abs = std::sqrt(ndim) * tolerance,
-         admm_penalty = gs.cbegin()->first,
+         admm_penalty = gs.size() > 1 ? (++gs.cbegin())->first : 1.0,
          admm_adjust = 2.0;
 
   // Outer loop to compute solution path

@@ -9,6 +9,7 @@
 
 #include "base.h"
 #include <boost/pending/disjoint_sets.hpp>
+#include <limits>
 
 struct GraphBlock : public arma::uvec {
 public:
@@ -70,16 +71,16 @@ protected:
     boost::disjoint_sets<arma::uword*, arma::uword*> ds(&rank[0], &parent[0]);
 
     // Initialize singleton partition
+    partition_t &singletons = sequence.begin()->second;
     for (arma::uword v = 0; v < n; ++v) {
       ds.make_set(v);
-      current.insert(current.cend(), 
-                     std::make_pair(ds.find_set(v), 
-                                    GraphBlock(v)));
+      singletons.insert(singletons.cend(), 
+                        std::make_pair(ds.find_set(v), GraphBlock(v)) );
     }
 
     // Initialize graph sequence
     GraphSeqBase<arma::uword, GraphBlock>::init(
-      ds, edges, minweight, maxblocksize, minblocknum);
+      ds, edges, maxblocksize, minblocknum);
   }
 };
 

@@ -33,9 +33,11 @@ struct GraphSeqBase {
   typedef typename sequence_t::size_type size_type;
 
   GraphSeqBase() : 
-    current_max(0),
-    last_weight(std::numeric_limits<double>::infinity())
-    {}
+    current_max(0), 
+    current_weight(std::numeric_limits<double>::infinity()) {
+    // Create an empty partition for the first knot
+    sequence.insert(std::make_pair(current_weight, partition_t()));
+  }
 
   size_type size() const { return sequence.size(); };
 
@@ -48,9 +50,11 @@ struct GraphSeqBase {
   const_reverse_iterator crbegin() const { return sequence.crbegin(); }
   const_reverse_iterator crend() const { return sequence.crend(); }
 
-  // The first partition whose weight is not > is active
+  // The active partition corresponds to the smallest key that is > weight
   const partition_t& get_active(const double weight) const {
-    return sequence.lower_bound(weight)->second;
+    // Partitions are ordered by decreasing key
+    // The first partition whose key is <= (not >) weight
+    return (--sequence.lower_bound(weight))->second;
   }
 
 protected:
@@ -59,23 +63,20 @@ protected:
 
   sequence_t sequence;
 
-  partition_t current;
   arma::uword current_max;
-  std::set<Vertex> newblocks;
-  double last_weight;
-
-  void flush_blocks(const double weight) {
-    sequence.insert(sequence.cend(), std::make_pair(weight, current));
-  }
+  double current_weight;
 
   void merge_blocks(const double weight, const Vertex& a, const Vertex& b, 
                     const Vertex& c) {
 
-    // New knot so store the current partition
-    if (weight < last_weight) {
-      flush_blocks(weight);
-      last_weight = weight;
+    // New knot so create a new partition
+    if (weight < current_weight) {
+      sequence.insert(sequence.cend(), 
+                      std::make_pair(weight, sequence.crbegin()->second));
+      current_weight = weight;
     }
+
+    partition_t &current = sequence.rbegin()->second;
 
     auto pa = current.find(a);
     auto pb = current.find(b);
@@ -131,17 +132,15 @@ protected:
   }
 
   template <typename DisjointSets>
-  void init(DisjointSets& ds, queue_t& edges, double minweight, 
+  void init(DisjointSets& ds, queue_t& edges, 
             arma::uword maxblocksize, arma::uword minblocknum = 1) {
 
     // Merge components until there is only one
-    while (!edges.empty() && current.size() > minblocknum && 
+    while (!edges.empty() && 
+           sequence.crbegin()->second.size() > minblocknum && 
            current_max < maxblocksize) {
       merge(ds, edges);
     }
-
-    // Store the final partition
-    if (minweight < last_weight) { flush_blocks(minweight); }
   }
 
 };

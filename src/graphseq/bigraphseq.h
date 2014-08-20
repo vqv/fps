@@ -97,22 +97,23 @@ protected:
     boost::disjoint_sets<Rank, Parent> ds(rank_pmap, parent_pmap);
 
     // Initialize singleton partition
+    partition_t &singletons = sequence.begin()->second;
     for (arma::uword i = 0; i < n_rows; ++i) {
       BiGraphVertex v(true, i);
       ds.make_set(v);
-      current.insert(current.cend(), 
+      singletons.insert(singletons.cend(), 
                      std::make_pair(ds.find_set(v), BiGraphBlock(v)));
     }
     for (arma::uword j = 0; j < n_cols; ++j) {
       BiGraphVertex v(false, j);
       ds.make_set(v);
-      current.insert(current.cend(), 
+      singletons.insert(singletons.cend(), 
                      std::make_pair(ds.find_set(v), BiGraphBlock(v)));
     }
 
     // Initialize graph sequence
     GraphSeqBase<BiGraphVertex, BiGraphBlock>::init(
-      ds, edges, minweight, maxblocksize, minblocknum);
+      ds, edges, maxblocksize, minblocknum);
 
     // Remove singletons
     for (auto& g : sequence) {
