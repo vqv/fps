@@ -69,7 +69,7 @@ inline void simplex_transform(block::vec& x, arma::uvec& rank, const double thet
 
 inline std::vector<double> simplex_knots(const block::vec& x) {
   std::vector<double> knots;
-  for (const auto& xi : x) { knots.insert(knots.cend(), xi.begin(), xi.end()); }
+  for (const auto& xi : x) { knots.insert(knots.end(), xi.begin(), xi.end()); }
   return knots;  
 }
 
