@@ -186,6 +186,8 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     // Find active vertex partition and construct block matrix
     const GraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
+    if(verbose > 1) { Rcout << active.size() << " blocks"; }
+
     block::symmap<GraphSeq::partition_t> b_S(_S, active), 
                                          b_z(_z, active), 
                                          b_u(_u, active);
@@ -215,8 +217,7 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     _leverage.col(i) = _p.diag();
 #endif
 
-    if (verbose > 1) { Rcout << niter[i]; }
-    if (verbose > 2) { Rcout << "(" << admm_penalty << ")"; }
+    if (verbose > 2) { Rcout << niter[i] << " iterations"; }
   }
 
   if (verbose > 0) { Rcout << std::endl; }

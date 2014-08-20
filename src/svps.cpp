@@ -184,6 +184,8 @@ List svps(NumericMatrix x, double ndim, unsigned int nsol = 50,
     // Find active vertex partition and construct block matrix
     const BiGraphSeq::partition_t& active = gs.get_active(_lambda[i]);
 
+    if(verbose > 1) { Rcout << active.size() << " blocks"; }
+
     block::map<BiGraphSeq::partition_t> b_x(_x, active), 
                                         b_z(_z, active), 
                                         b_u(_u, active);
@@ -215,8 +217,7 @@ List svps(NumericMatrix x, double ndim, unsigned int nsol = 50,
     _leverage_col.col(i) = vectorise(sum(square(_p), 0));
 #endif
 
-    if (verbose > 1) { Rcout << niter[i]; }
-    if (verbose > 2) { Rcout << "(" << admm_penalty << ")"; }
+    if (verbose > 2) { Rcout << niter[i] << " iterations"; }
   }
 
   if (verbose > 0) { Rcout << std::endl; }
