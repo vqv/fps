@@ -16,6 +16,8 @@
 #' @param ndim           Target subspace dimension (can be fractional)
 #' @param nsol           Number of solutions to compute
 #' @param maxblocksize   Suggested maximum block size; ignored if \code{== 0}
+#' @param minblocknum    Suggested minimum number of blocks; ignored 
+#'                       if \code{< 2}
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
 #'                       lambda; ignored if \code{< 0}
@@ -73,8 +75,8 @@
 #' print(v)
 #' }
 #'
-fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxblocksize, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
+fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, minblocknum = 2L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_fps', PACKAGE = 'fps', S, ndim, nsol, maxblocksize, minblocknum, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 
 #' Singular Value Projection and Selection
@@ -93,6 +95,8 @@ fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lam
 #' @param nsol           Number of solutions to compute
 #' @param maxblocksize   Suggested maximum block size (rows + columns);
 #'                       ignored if \code{== 0}
+#' @param minblocknum    Suggested minimum number of blocks; ignored 
+#'                       if \code{< 2}
 #' @param lambdaminratio Minimum value of lambda as a fraction of 
 #'                       the automatically determined maximum value of 
 #'                       lambda; ignored if \code{< 0}
@@ -138,7 +142,7 @@ fps <- function(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lam
 #' print(out)
 #' plot(out)
 #'
-svps <- function(x, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
-    .Call('fps_svps', PACKAGE = 'fps', x, ndim, nsol, maxblocksize, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
+svps <- function(x, ndim, nsol = 50L, maxblocksize = 0L, minblocknum = 2L, lambdaminratio = -1, lambdamin = -1, lambda = as.numeric( c()), maxiter = 100L, tolerance = 1e-3, verbose = 0L) {
+    .Call('fps_svps', PACKAGE = 'fps', x, ndim, nsol, maxblocksize, minblocknum, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose)
 }
 

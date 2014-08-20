@@ -3,9 +3,9 @@
 \alias{svps}
 \title{Singular Value Projection and Selection}
 \usage{
-svps(x, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
-  lambdamin = -1, lambda = as.numeric(c()), maxiter = 100L,
-  tolerance = 0.001, verbose = 0L)
+svps(x, ndim, nsol = 50L, maxblocksize = 0L, minblocknum = 2L,
+  lambdaminratio = -1, lambdamin = -1, lambda = as.numeric(c()),
+  maxiter = 100L, tolerance = 0.001, verbose = 0L)
 }
 \arguments{
 \item{x}{Input matrix}
@@ -16,6 +16,9 @@ svps(x, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
 
 \item{maxblocksize}{Suggested maximum block size (rows + columns);
 ignored if \code{== 0}}
+
+\item{minblocknum}{Suggested minimum number of blocks; ignored
+if \code{< 2}}
 
 \item{lambdaminratio}{Minimum value of lambda as a fraction of
 the automatically determined maximum value of

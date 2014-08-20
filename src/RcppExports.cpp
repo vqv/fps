@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // fps
-List fps(NumericMatrix S, double ndim, unsigned int nsol = 50, unsigned int maxblocksize = 0, double lambdaminratio = -1, double lambdamin = -1, NumericVector lambda = NumericVector::create(), int maxiter = 100, double tolerance = 1e-3, int verbose = 0);
-RcppExport SEXP fps_fps(SEXP SSEXP, SEXP ndimSEXP, SEXP nsolSEXP, SEXP maxblocksizeSEXP, SEXP lambdaminratioSEXP, SEXP lambdaminSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP toleranceSEXP, SEXP verboseSEXP) {
+List fps(NumericMatrix S, double ndim, unsigned int nsol = 50, unsigned int maxblocksize = 0, unsigned int minblocknum = 2, double lambdaminratio = -1, double lambdamin = -1, NumericVector lambda = NumericVector::create(), int maxiter = 100, double tolerance = 1e-3, int verbose = 0);
+RcppExport SEXP fps_fps(SEXP SSEXP, SEXP ndimSEXP, SEXP nsolSEXP, SEXP maxblocksizeSEXP, SEXP minblocknumSEXP, SEXP lambdaminratioSEXP, SEXP lambdaminSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP toleranceSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -17,13 +17,14 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< double >::type ndim(ndimSEXP );
         Rcpp::traits::input_parameter< unsigned int >::type nsol(nsolSEXP );
         Rcpp::traits::input_parameter< unsigned int >::type maxblocksize(maxblocksizeSEXP );
+        Rcpp::traits::input_parameter< unsigned int >::type minblocknum(minblocknumSEXP );
         Rcpp::traits::input_parameter< double >::type lambdaminratio(lambdaminratioSEXP );
         Rcpp::traits::input_parameter< double >::type lambdamin(lambdaminSEXP );
         Rcpp::traits::input_parameter< NumericVector >::type lambda(lambdaSEXP );
         Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP );
         Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP );
         Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP );
-        List __result = fps(S, ndim, nsol, maxblocksize, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose);
+        List __result = fps(S, ndim, nsol, maxblocksize, minblocknum, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -31,8 +32,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // svps
-List svps(NumericMatrix x, double ndim, unsigned int nsol = 50, unsigned int maxblocksize = 0, double lambdaminratio = -1, double lambdamin = -1, NumericVector lambda = NumericVector::create(), int maxiter = 100, double tolerance = 1e-3, int verbose = 0);
-RcppExport SEXP fps_svps(SEXP xSEXP, SEXP ndimSEXP, SEXP nsolSEXP, SEXP maxblocksizeSEXP, SEXP lambdaminratioSEXP, SEXP lambdaminSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP toleranceSEXP, SEXP verboseSEXP) {
+List svps(NumericMatrix x, double ndim, unsigned int nsol = 50, unsigned int maxblocksize = 0, unsigned int minblocknum = 2, double lambdaminratio = -1, double lambdamin = -1, NumericVector lambda = NumericVector::create(), int maxiter = 100, double tolerance = 1e-3, int verbose = 0);
+RcppExport SEXP fps_svps(SEXP xSEXP, SEXP ndimSEXP, SEXP nsolSEXP, SEXP maxblocksizeSEXP, SEXP minblocknumSEXP, SEXP lambdaminratioSEXP, SEXP lambdaminSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP toleranceSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -41,13 +42,14 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< double >::type ndim(ndimSEXP );
         Rcpp::traits::input_parameter< unsigned int >::type nsol(nsolSEXP );
         Rcpp::traits::input_parameter< unsigned int >::type maxblocksize(maxblocksizeSEXP );
+        Rcpp::traits::input_parameter< unsigned int >::type minblocknum(minblocknumSEXP );
         Rcpp::traits::input_parameter< double >::type lambdaminratio(lambdaminratioSEXP );
         Rcpp::traits::input_parameter< double >::type lambdamin(lambdaminSEXP );
         Rcpp::traits::input_parameter< NumericVector >::type lambda(lambdaSEXP );
         Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP );
         Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP );
         Rcpp::traits::input_parameter< int >::type verbose(verboseSEXP );
-        List __result = svps(x, ndim, nsol, maxblocksize, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose);
+        List __result = svps(x, ndim, nsol, maxblocksize, minblocknum, lambdaminratio, lambdamin, lambda, maxiter, tolerance, verbose);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

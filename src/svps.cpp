@@ -35,6 +35,8 @@ using namespace arma;
 //' @param nsol           Number of solutions to compute
 //' @param maxblocksize   Suggested maximum block size (rows + columns);
 //'                       ignored if \code{== 0}
+//' @param minblocknum    Suggested minimum number of blocks; ignored 
+//'                       if \code{< 2}
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
 //'                       lambda; ignored if \code{< 0}
@@ -81,8 +83,8 @@ using namespace arma;
 //' plot(out)
 //'
 // [[Rcpp::export]]
-List svps(NumericMatrix x, double ndim,
-          unsigned int nsol = 50, unsigned int maxblocksize = 0, 
+List svps(NumericMatrix x, double ndim, unsigned int nsol = 50, 
+          unsigned int maxblocksize = 0, unsigned int minblocknum = 2, 
           double lambdaminratio = -1, double lambdamin = -1, 
           NumericVector lambda = NumericVector::create(), 
           int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
@@ -108,10 +110,18 @@ List svps(NumericMatrix x, double ndim,
     nsol = _lambda.n_elem;
   }
 
+  // There are several ways to indirectly set the minimum value of lambda
+  // We define the priority as:
+  // lambda > lambdamin > lambdaminratio > (maxblocksize, minblocknum)
+  if (lambdaminratio > 0) { maxblocksize = 0; minblocknum = 0; }
+  if (lambdamin >= 0) { 
+    lambdaminratio = -1; maxblocksize = 0; minblocknum = 0; }
+
   // Compute the sequence of solution graphs
   BiGraphSeq gs(_x, std::fmax(0.0, lambdamin), 
                 maxblocksize > 0 ? (uword) maxblocksize 
-                                 : _x.n_rows + _x.n_cols);
+                                 : _x.n_rows + _x.n_cols,
+                minblocknum);
 
   // Generate lambda sequence if necessary
   if (lambda.size() == 0) {

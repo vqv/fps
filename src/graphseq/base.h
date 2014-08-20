@@ -133,12 +133,13 @@ protected:
 
   template <typename DisjointSets>
   void init(DisjointSets& ds, queue_t& edges, 
-            arma::uword maxblocksize, arma::uword minblocknum = 1) {
+            arma::uword maxblocksize, arma::uword minblocknum) {
 
+    minblocknum = std::max((arma::uword) 2, minblocknum);
     // Merge components until there is only one
     while (!edges.empty() && 
-           sequence.crbegin()->second.size() > minblocknum && 
-           current_max < maxblocksize) {
+           sequence.crbegin()->second.size() >= minblocknum && 
+           current_max <= maxblocksize) {
       merge(ds, edges);
     }
   }

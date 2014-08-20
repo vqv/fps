@@ -34,6 +34,8 @@ using namespace arma;
 //' @param ndim           Target subspace dimension (can be fractional)
 //' @param nsol           Number of solutions to compute
 //' @param maxblocksize   Suggested maximum block size; ignored if \code{== 0}
+//' @param minblocknum    Suggested minimum number of blocks; ignored 
+//'                       if \code{< 2}
 //' @param lambdaminratio Minimum value of lambda as a fraction of 
 //'                       the automatically determined maximum value of 
 //'                       lambda; ignored if \code{< 0}
@@ -93,7 +95,7 @@ using namespace arma;
 //'
 // [[Rcpp::export]]
 List fps(NumericMatrix S, double ndim, unsigned int nsol = 50, 
-         unsigned int maxblocksize = 0, 
+         unsigned int maxblocksize = 0, unsigned int minblocknum = 2, 
          double lambdaminratio = -1, double lambdamin = -1, 
          NumericVector lambda = NumericVector::create(), 
          int maxiter = 100, double tolerance = 1e-3, int verbose = 0) {
@@ -117,9 +119,17 @@ List fps(NumericMatrix S, double ndim, unsigned int nsol = 50,
     nsol = _lambda.n_elem;
   }
 
+  // There are several ways to indirectly set the minimum value of lambda
+  // We define the priority as:
+  // lambda > lambdamin > lambdaminratio > maxblocksize
+  if (lambdaminratio > 0) { maxblocksize = 0; minblocknum = 0; }
+  if (lambdamin >= 0) { 
+    lambdaminratio = -1; maxblocksize = 0; minblocknum = 0; }
+
   // Compute the sequence of solution graphs
   GraphSeq gs(_S, std::fmax(0.0, lambdamin), 
-              maxblocksize > 0 ? (uword) maxblocksize : _S.n_cols);
+              maxblocksize > 0 ? (uword) maxblocksize : _S.n_cols,
+              minblocknum);
 
   // Generate lambda sequence if necessary
   if (lambda.size() == 0) {

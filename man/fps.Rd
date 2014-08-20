@@ -5,9 +5,9 @@
 \alias{fps-package}
 \title{Fantope Projection and Selection}
 \usage{
-fps(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
-  lambdamin = -1, lambda = as.numeric(c()), maxiter = 100L,
-  tolerance = 0.001, verbose = 0L)
+fps(S, ndim, nsol = 50L, maxblocksize = 0L, minblocknum = 2L,
+  lambdaminratio = -1, lambdamin = -1, lambda = as.numeric(c()),
+  maxiter = 100L, tolerance = 0.001, verbose = 0L)
 }
 \arguments{
 \item{S}{Input matrix (assumed to be symmetric)}
@@ -17,6 +17,9 @@ fps(S, ndim, nsol = 50L, maxblocksize = 0L, lambdaminratio = -1,
 \item{nsol}{Number of solutions to compute}
 
 \item{maxblocksize}{Suggested maximum block size; ignored if \code{== 0}}
+
+\item{minblocknum}{Suggested minimum number of blocks; ignored
+if \code{< 2}}
 
 \item{lambdaminratio}{Minimum value of lambda as a fraction of
 the automatically determined maximum value of

@@ -29,7 +29,7 @@ public:
 struct GraphSeq : GraphSeqBase<arma::uword, GraphBlock> {
 
   GraphSeq(const arma::mat& x, double minweight, 
-           arma::uword maxblocksize, arma::uword minblocknum = 1) {
+           arma::uword maxblocksize, arma::uword minblocknum) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -47,7 +47,7 @@ struct GraphSeq : GraphSeqBase<arma::uword, GraphBlock> {
 
   // Sparse matrix constructor - expects x to contain at least a lower triangle
   GraphSeq(const arma::sp_mat& x, double minweight, 
-           arma::uword maxblocksize, arma::uword minblocknum = 1) {
+           arma::uword maxblocksize, arma::uword minblocknum) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -63,7 +63,7 @@ struct GraphSeq : GraphSeqBase<arma::uword, GraphBlock> {
 
 protected:
   void init(arma::uword n, queue_t& edges, double minweight, 
-            arma::uword maxblocksize, arma::uword minblocknum = 1) 
+            arma::uword maxblocksize, arma::uword minblocknum) 
   {
     // Initialize disjoint sets structure
     std::vector<arma::uword> rank(n);

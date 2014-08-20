@@ -44,7 +44,7 @@ struct BiGraphBlock {
 struct BiGraphSeq : GraphSeqBase<BiGraphVertex, BiGraphBlock> {
 public:
   BiGraphSeq(const arma::mat& x, double minweight, 
-             arma::uword maxblocksize, arma::uword minblocknum = 1) {
+             arma::uword maxblocksize, arma::uword minblocknum) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -64,7 +64,7 @@ public:
 
   // Sparse matrix constructor
   BiGraphSeq(const arma::sp_mat& x, double minweight, 
-             arma::uword maxblocksize, arma::uword minblocknum = 1) {
+             arma::uword maxblocksize, arma::uword minblocknum) {
 
     // Construct edges
     std::priority_queue<edge_t> edges;
@@ -83,7 +83,7 @@ public:
 protected:
   void init(arma::uword n_rows, arma::uword n_cols, queue_t& edges, 
             double minweight, arma::uword maxblocksize, 
-            arma::uword minblocknum = 1) 
+            arma::uword minblocknum) 
   {
     // Initialize disjoint sets structure
     typedef std::map<BiGraphVertex, std::size_t> rank_t;
