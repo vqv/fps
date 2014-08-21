@@ -23,11 +23,11 @@ int admm(P Projection, S Selection, D Distance,
     z_old = z;
 
     // Projection
-    x = z - u + input / admm_penalty;
+    x = z - u;
     Projection(x);
 
     // Selection
-    z = x + u;
+    z = x + u + input / admm_penalty;
     Selection(z, 1.0 / admm_penalty);
 
     // Dual variable update
