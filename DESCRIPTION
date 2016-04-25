@@ -9,11 +9,10 @@ Depends:
     Matrix
 Imports:
     BH,
-    ggplot2,
     reshape2,
     Rcpp (>= 0.11.0),
     RcppArmadillo (>= 0.4.320.0)
 LinkingTo: BH, Rcpp, RcppArmadillo
 License: GPL (>= 2)
 Suggests:
-    pcaPP
+    ggplot2, pcaPP
