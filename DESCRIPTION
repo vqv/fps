@@ -5,8 +5,7 @@ Authors@R: c(person(c("Vincent", "Q"), "Vu", role = c("aut", "cre"), email =
     "vqv@stat.osu.edu"))
 Description: ADMM algorithm for FPS
 Depends:
-    R (>= 3.1.0),
-    Matrix
+    R (>= 3.1.0)
 Imports:
     BH,
     reshape2,
